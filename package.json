@@ -1,0 +1,33 @@
+{
+  "name": "fast-node-api",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "swc src -d dist",
+    "start": "node dist/src/index.js",
+    "dev": "nodemon -L -e ts --exec \"npm run build && npm start\""
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.1.1",
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.44.0"
+  },
+  "devDependencies": {
+    "@swc/cli": "^0.3.14",
+    "@swc/core": "^1.6.5",
+    "@types/better-sqlite3": "^7.6.10",
+    "@types/node": "^20.14.9",
+    "dotenv": "^16.4.5",
+    "nodemon": "^3.1.4",
+    "typescript": "^5.5.2"
+  },
+  "nodemonConfig": {
+    "ignore": [
+      "dist"
+    ]
+  }
+}
