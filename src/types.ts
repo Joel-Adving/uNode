@@ -1,11 +1,15 @@
 import { HttpRequest, HttpResponse, TemplatedApp } from 'uWebSockets.js'
 
-export type Middleware = (req: HttpRequest, res: HttpResponse, next: () => void) => void
+export type Middleware = (req: Request, res: Response, next: () => void) => void
 export type HttpMethod = 'get' | 'post' | 'patch' | 'put' | 'del' | 'options'
 
 export interface ILogger {
   log: (message: unknown) => void
   error: (message: unknown) => void
+}
+
+export interface Request extends HttpRequest {
+  body: <T>() => Promise<T>
 }
 
 export interface Response extends HttpResponse {
@@ -19,10 +23,10 @@ export interface Response extends HttpResponse {
 }
 
 export interface IApp extends TemplatedApp {
-  get: (path: string, handler: (res: Response, req: HttpRequest) => void) => TemplatedApp
-  post: (path: string, handler: (res: Response, req: HttpRequest) => void) => TemplatedApp
-  patch: (path: string, handler: (res: Response, req: HttpRequest) => void) => TemplatedApp
-  put: (path: string, handler: (res: Response, req: HttpRequest) => void) => TemplatedApp
-  delete: (path: string, handler: (res: Response, req: HttpRequest) => void) => TemplatedApp
-  options: (path: string, handler: (res: Response, req: HttpRequest) => void) => TemplatedApp
+  get: (path: string, handler: (res: Response, req: Request) => void) => TemplatedApp
+  post: (path: string, handler: (res: Response, req: Request) => void) => TemplatedApp
+  patch: (path: string, handler: (res: Response, req: Request) => void) => TemplatedApp
+  put: (path: string, handler: (res: Response, req: Request) => void) => TemplatedApp
+  delete: (path: string, handler: (res: Response, req: Request) => void) => TemplatedApp
+  options: (path: string, handler: (res: Response, req: Request) => void) => TemplatedApp
 }

@@ -1,7 +1,8 @@
-import uWS, { TemplatedApp, us_listen_socket } from 'uWebSockets.js'
+import uWS, { us_listen_socket } from 'uWebSockets.js'
 import { HttpRequest, HttpResponse } from 'uWebSockets.js'
 import { sendFile } from './utils/file'
-import { HttpMethod, IApp, ILogger, Middleware, Response } from './types'
+import { HttpMethod, IApp, ILogger, Middleware, Request, Response } from './types'
+import { parseBody } from './utils/uws-utils'
 
 export class App {
   app: IApp
@@ -16,12 +17,13 @@ export class App {
   private handleRequest(
     method: HttpMethod,
     path: string,
-    handler: (req: HttpRequest, res: Response) => void | Promise<void>
+    handler: (req: Request, res: Response) => void | Promise<void>
   ) {
-    ;(this.app[method] as (path: string, handler: (res: Response, req: HttpRequest) => void) => void).call(
+    ;(this.app[method] as (path: string, handler: (res: Response, req: Request) => void) => void).call(
       this.app,
       path,
       (res, req) => {
+        this.patchRequest(req, res)
         this.patchResponse(res, req)
         try {
           this.executeMiddlewares(req, res, this.middlewares, () => handler(req, res))
@@ -33,6 +35,10 @@ export class App {
         }
       }
     )
+  }
+
+  private patchRequest(req: Request, res: HttpResponse) {
+    req.body = async <T>() => parseBody<T>(res)
   }
 
   private patchResponse(res: Response, req: HttpRequest) {
@@ -85,12 +91,7 @@ export class App {
     res.sendFile = (filePath) => sendFile(req, res, filePath)
   }
 
-  private executeMiddlewares(
-    req: HttpRequest,
-    res: HttpResponse,
-    handlers: Middleware[],
-    finalHandler: () => void | Promise<void>
-  ) {
+  private executeMiddlewares(req: Request, res: Response, handlers: Middleware[], finalHandler: () => void) {
     const next = (index: number) => {
       if (index < handlers.length) {
         handlers[index](req, res, () => next(index + 1))
@@ -106,7 +107,7 @@ export class App {
     return this
   }
 
-  options(path: string, handler: (req: HttpRequest, res: Response) => void) {
+  options(path: string, handler: (req: Request, res: Response) => void) {
     this.handleRequest('options', path, handler)
   }
 
@@ -114,27 +115,27 @@ export class App {
     this.app.ws(pattern, behavior)
   }
 
-  get(path: string, handler: (req: HttpRequest, res: Response) => void) {
+  get(path: string, handler: (req: Request, res: Response) => void) {
     this.handleRequest('get', path, handler)
     return this
   }
 
-  post(path: string, handler: (req: HttpRequest, res: Response) => void) {
+  post(path: string, handler: (req: Request, res: Response) => void) {
     this.handleRequest('post', path, handler)
     return this
   }
 
-  patch(path: string, handler: (req: HttpRequest, res: Response) => void) {
+  patch(path: string, handler: (req: Request, res: Response) => void) {
     this.handleRequest('patch', path, handler)
     return this
   }
 
-  put(path: string, handler: (req: HttpRequest, res: Response) => void) {
+  put(path: string, handler: (req: Request, res: Response) => void) {
     this.handleRequest('put', path, handler)
     return this
   }
 
-  delete(path: string, handler: (req: HttpRequest, res: Response) => void) {
+  delete(path: string, handler: (req: Request, res: Response) => void) {
     this.handleRequest('del', path, handler)
     return this
   }

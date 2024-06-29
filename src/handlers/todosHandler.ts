@@ -12,14 +12,17 @@ export const todosHandler = new Router()
   })
 
   .post('', async (req, res) => {
-    const body = await parseBody<{ title: string }>(res)
+    const body = await req.body<{ title: string }>()
+
     if (!body.title) {
       return res.status(400).send('Required field missing')
     }
+
     const todo = todosDb.getTodoByTitle(body.title)
     if (todo) {
       return res.status(400).send('Todo with that title already exists')
     }
+
     const newTodo = todosDb.createTodo(body.title)
     res.json(newTodo)
   })
