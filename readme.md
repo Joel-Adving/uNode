@@ -14,42 +14,38 @@ This is a web application framework that leverages the high-performance capabili
 
 ### Benchmarks
 
-Benchmarks where done using Apache JMeter
+Benchmarks where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04, AMD Ryzen 5 5600X 3,7GHz 6-core 12-thread CPU, 32GB RAM
 
-Windows 11 PC, WSL 2 ubuntu 22.04, AMD Ryzen 5 5600X 3,7GHz 6-core 12-thread CPU, 32GB RAM
+"Hello world" plain text response for each request for 100 concurrent users, 1 seconds ramp-up period, 60 seconds test duration.
 
-100 concurrent users, 1 seconds ramp-up period, 60 seconds test duration
-
-The servers sent a simple hello world plain text response for each request
-
-Results are sorted in descending order by average requests/second
+#### Results sorted in descending order by average throughput requests/second
 
 #### uWebSockets.js
 
 ```
-Average throughput: 74420.095 requests/second
+74420.095 requests/second
 ```
 
 #### This project
 
 ```
-Average throughput: 72475.875 requests/second
+72475.875 requests/second
 ```
 
 #### hyper-express
 
 ```
-Average throughput: 65598.721 requests/second
+65598.721 requests/second
 ```
 
 #### Bun
 
 ```
-Average throughput: 62731.935 requests/second
+62731.935 requests/second
 ```
 
 #### Express.js
 
 ```
-Average throughput: 8912.592 requests/second
+8912.592 requests/second
 ```
