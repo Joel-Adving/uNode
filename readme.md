@@ -27,7 +27,7 @@ Benchmarks where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04
 #### uWebSockets.js
 
 ```
-74420.095 requests/second
+73420.095 requests/second
 ```
 
 #### This project
@@ -45,7 +45,13 @@ Benchmarks where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04
 #### Bun
 
 ```
-62731.935 requests/second
+64097.835 requests/second
+```
+
+#### ElysiaJS
+
+```
+63300.917 requests/second
 ```
 
 #### Express.js
