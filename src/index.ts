@@ -26,5 +26,5 @@ new App()
   .group('/users', usersHandler)
 
   .listen(env.port, () => {
-    console.log(`Listening to port ${env.port} \nOpen in browser http://localhost:${env.port}`)
+    console.log(`Listening on port ${env.port} \nOpen in browser http://localhost:${env.port}`)
   })
