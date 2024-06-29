@@ -15,9 +15,13 @@ This is a web application framework that leverages the high-performance capabili
 ### Benchmarks
 
 Benchmarks where done using Apache JMeter
+
 Windows 11 PC, WSL 2 ubuntu 22.04, AMD Ryzen 5 5600X 3,7GHz 6-core 12-thread CPU, 32GB RAM
+
 100 concurrent users, 1 seconds ramp-up period, 60 seconds test duration
+
 The servers sent a simple hello world plain text response for each request
+
 Results are sorted in descending order by average requests/second
 
 #### uWebSockets.js
