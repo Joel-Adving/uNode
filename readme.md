@@ -10,6 +10,8 @@ This is a web application framework that leverages the high-performance capabili
 - **Express-like API:** A similar api to Express.
 - **Middleware Support:** Support for the use of middleware functions to process requests and responses.
 - **Route grouping:** Routes can be grouped together and have exclusive middlewares for each group individual.
+- **Static file serving:** Serve static files with ease.
+- **Streaming support:** Stream data to the client.
 - **Performant data Parsing:** Optimized request body parsing to handle data efficiently.
 
 ### Benchmarks
