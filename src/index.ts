@@ -11,7 +11,7 @@ import { App } from './app'
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../')
 
 new App()
-  // .use(middleware)
+  .use(middleware)
   .get('/*', serveStatic('public'))
 
   .get('/stress-test', (req, res) => {
