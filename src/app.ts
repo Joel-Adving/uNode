@@ -20,7 +20,7 @@ export class App {
       path,
       (res, req) => {
         this.patchRequest(req, res)
-        this.patchResponse(res, req)
+        this.patchResponse(req, res)
         try {
           this.executeMiddlewares(req, res, this.middlewares, () => handler(req, res))
         } catch (error) {
@@ -33,12 +33,12 @@ export class App {
     )
   }
 
-  private patchRequest(req: Request, res: HttpResponse) {
+  private patchRequest(req: Request, res: Response) {
     req.body = async <T>() => parseBody<T>(res)
     req.getCookie = (name: string) => getCookie(req, res, name)
   }
 
-  private patchResponse(res: Response, req: HttpRequest) {
+  private patchResponse(req: Request, res: Response) {
     res._end = res.end
 
     res.onAborted(() => {
