@@ -1,8 +1,8 @@
-## High performance web application framework built on uWebSockets.js
+## High performance web api framework built on uWebSockets.js
 
 ### Overview
 
-This is a web application framework that leverages the high-performance capabilities of the uWebSockets.js http server. It is designed to provide an API that is similar to Express, making it easy to use while also utilizing the performance benefits of uWebSockets.js.
+This project leverages the high-performance capabilities of the uWebSockets.js c++ http server. It is designed to provide an API that is similar to Express, making it easy to use while also utilizing the performance benefits of uWebSockets.js.
 
 ### Key Features
 
