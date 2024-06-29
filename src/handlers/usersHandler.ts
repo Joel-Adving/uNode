@@ -5,21 +5,23 @@ import { parseBody } from '../utils/uws-utils'
 
 export const usersHandler = new Router()
   .use(userMiddleware)
+
   .get('', (req, res) => {
     const users = usersDb.getUsers()
-    res.end(JSON.stringify(users))
+    res.json(users)
   })
+
   .post('', async (req, res) => {
     const body = await parseBody<{ username: string; password: string }>(res)
     if (!body.username || !body.password) {
-      return res.writeStatus('400').end('Username or password missing')
+      return res.status(400).send('Username or password missing')
     }
     const user = usersDb.getUserByUsername(body.username)
     if (user) {
-      return res.writeStatus('400').end('User already exists')
+      return res.status(400).send('User already exists')
     }
     usersDb.createUser(body.username, body.password)
-    res.end('User created')
+    res.send('User created')
   })
 
 function userMiddleware(req: HttpRequest, res: HttpResponse, next: () => void) {

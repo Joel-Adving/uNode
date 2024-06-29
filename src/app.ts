@@ -1,22 +1,7 @@
 import uWS, { TemplatedApp, us_listen_socket } from 'uWebSockets.js'
 import { HttpRequest, HttpResponse } from 'uWebSockets.js'
-
-type Middleware = (req: HttpRequest, res: HttpResponse, next: () => void) => void
-type HttpMethod = 'get' | 'post' | 'patch' | 'put' | 'del' | 'options'
-
-interface ILogger {
-  log: (message: unknown) => void
-  error: (message: unknown) => void
-}
-
-interface IApp extends TemplatedApp {
-  get: (path: string, handler: (res: HttpResponse, req: HttpRequest) => void) => TemplatedApp
-  post: (path: string, handler: (res: HttpResponse, req: HttpRequest) => void) => TemplatedApp
-  patch: (path: string, handler: (res: HttpResponse, req: HttpRequest) => void) => TemplatedApp
-  put: (path: string, handler: (res: HttpResponse, req: HttpRequest) => void) => TemplatedApp
-  delete: (path: string, handler: (res: HttpResponse, req: HttpRequest) => void) => TemplatedApp
-  options: (path: string, handler: (res: HttpResponse, req: HttpRequest) => void) => TemplatedApp
-}
+import { sendFile } from './utils/file'
+import { HttpMethod, IApp, ILogger, Middleware, Response } from './types'
 
 export class App {
   app: IApp
@@ -31,13 +16,13 @@ export class App {
   private handleRequest(
     method: HttpMethod,
     path: string,
-    handler: (req: HttpRequest, res: HttpResponse) => void | Promise<void>
+    handler: (req: HttpRequest, res: Response) => void | Promise<void>
   ) {
-    ;(this.app[method] as (path: string, handler: (res: HttpResponse, req: HttpRequest) => void) => void).call(
+    ;(this.app[method] as (path: string, handler: (res: Response, req: HttpRequest) => void) => void).call(
       this.app,
       path,
       (res, req) => {
-        this.patchRes(res)
+        this.patchResponse(res, req)
         try {
           this.executeMiddlewares(req, res, this.middlewares, () => handler(req, res))
         } catch (error) {
@@ -50,7 +35,7 @@ export class App {
     )
   }
 
-  private patchRes(res: HttpResponse) {
+  private patchResponse(res: Response, req: HttpRequest) {
     res._end = res.end
 
     res.onAborted(() => {
@@ -71,15 +56,33 @@ export class App {
         console.log(`uWS DEBUG: Called end after done`)
         return res
       }
-
       res.done = true
-
       res.cork(() => {
         res._end(body)
       })
-
       return res
     }
+
+    res.send = (body) => {
+      res.end(body)
+    }
+
+    res.json = (body) => {
+      res.writeHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify(body))
+    }
+
+    res.status = (code) => {
+      res.writeStatus(String(code))
+      return res
+    }
+
+    res.header = (key, value) => {
+      res.writeHeader(key, value)
+      return res
+    }
+
+    res.sendFile = (filePath) => sendFile(req, res, filePath)
   }
 
   private executeMiddlewares(
@@ -103,7 +106,7 @@ export class App {
     return this
   }
 
-  options(path: string, handler: (req: HttpRequest, res: HttpResponse) => void) {
+  options(path: string, handler: (req: HttpRequest, res: Response) => void) {
     this.handleRequest('options', path, handler)
   }
 
@@ -111,27 +114,27 @@ export class App {
     this.app.ws(pattern, behavior)
   }
 
-  get(path: string, handler: (req: HttpRequest, res: HttpResponse) => void) {
+  get(path: string, handler: (req: HttpRequest, res: Response) => void) {
     this.handleRequest('get', path, handler)
     return this
   }
 
-  post(path: string, handler: (req: HttpRequest, res: HttpResponse) => void) {
+  post(path: string, handler: (req: HttpRequest, res: Response) => void) {
     this.handleRequest('post', path, handler)
     return this
   }
 
-  patch(path: string, handler: (req: HttpRequest, res: HttpResponse) => void) {
+  patch(path: string, handler: (req: HttpRequest, res: Response) => void) {
     this.handleRequest('patch', path, handler)
     return this
   }
 
-  put(path: string, handler: (req: HttpRequest, res: HttpResponse) => void) {
+  put(path: string, handler: (req: HttpRequest, res: Response) => void) {
     this.handleRequest('put', path, handler)
     return this
   }
 
-  delete(path: string, handler: (req: HttpRequest, res: HttpResponse) => void) {
+  delete(path: string, handler: (req: HttpRequest, res: Response) => void) {
     this.handleRequest('del', path, handler)
     return this
   }

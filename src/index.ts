@@ -1,16 +1,26 @@
 import 'dotenv/config'
+import path from 'path'
 import { env } from './env'
-import { serveStatic } from './utils/static'
+import { fileURLToPath } from 'url'
+import { serveStatic } from './utils/file'
 import { middleware } from './middleware'
-import { App } from './app'
 import { usersHandler } from './handlers/usersHandler'
 import { todosHandler } from './handlers/todosHandler'
+import { App } from './app'
 
-const app = new App()
+const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../')
+
+new App()
   .use(middleware)
   .get('/*', serveStatic('public'))
+
+  .get('/file', (req, res) => {
+    res.sendFile(path.resolve(rootDir, 'public/image.webp'))
+  })
+
   .group('/todos', todosHandler)
   .group('/users', usersHandler)
+
   .listen(env.port, () => {
     console.log(`Listening to port ${env.port}`)
   })

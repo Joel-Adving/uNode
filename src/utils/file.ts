@@ -39,7 +39,7 @@ export function serveStatic(dir: string) {
   }
 }
 
-function getFileStats(filePath: string) {
+export function getFileStats(filePath: string) {
   const stats: Stats | undefined = lstatSync(filePath, { throwIfNoEntry: false })
 
   if (!stats || stats.isDirectory()) {
@@ -55,11 +55,10 @@ function getFileStats(filePath: string) {
 }
 
 function toArrayBuffer(buffer: Buffer) {
-  const { buffer: arrayBuffer, byteOffset, byteLength } = buffer
-  return arrayBuffer.slice(byteOffset, byteOffset + byteLength)
+  return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
 }
 
-function streamFile(res: HttpResponse, fileStats: ReturnType<typeof getFileStats>) {
+export function streamFile(res: HttpResponse, fileStats: ReturnType<typeof getFileStats>) {
   const filePath = fileStats?.filePath
   const size = fileStats?.size
 
@@ -102,4 +101,24 @@ function streamFile(res: HttpResponse, fileStats: ReturnType<typeof getFileStats
 
   res.onAborted(destroyReadStream)
   readStream.on('data', onDataChunk).on('error', onError).on('end', destroyReadStream)
+}
+
+export function sendFile(req: HttpRequest, res: HttpResponse, filePath: string) {
+  const fileStats = getFileStats(filePath)
+
+  if (!fileStats) {
+    return res.writeStatus('404').end('File not found')
+  }
+
+  const { contentType, lastModified } = fileStats
+  const ifModifiedSince = req.getHeader('if-modified-since')
+
+  if (ifModifiedSince === lastModified) {
+    return res.writeStatus('304').end()
+  }
+
+  res.writeHeader('Content-Type', contentType)
+  res.writeHeader('Last-Modified', lastModified)
+
+  streamFile(res, fileStats)
 }
