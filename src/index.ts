@@ -11,8 +11,12 @@ import { App } from './app'
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../')
 
 new App()
-  .use(middleware)
+  // .use(middleware)
   .get('/*', serveStatic('public'))
+
+  .get('/stress-test', (req, res) => {
+    res.send('Stress test')
+  })
 
   .get('/file', (req, res) => {
     res.sendFile(path.resolve(rootDir, 'public/image.webp'))
@@ -20,10 +24,6 @@ new App()
 
   .group('/todos', todosHandler)
   .group('/users', usersHandler)
-
-  .get('/stress-test', (req, res) => {
-    res.send('Stress test')
-  })
 
   .listen(env.port, () => {
     console.log(`Listening to port ${env.port}`)
