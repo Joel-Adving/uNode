@@ -10,6 +10,7 @@ export interface ILogger {
 
 export interface Request extends HttpRequest {
   body: <T>() => Promise<T>
+  getCookie: (name: string) => string
 }
 
 export interface Response extends HttpResponse {

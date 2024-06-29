@@ -21,6 +21,10 @@ new App()
   .group('/todos', todosHandler)
   .group('/users', usersHandler)
 
+  .get('/stress-test', (req, res) => {
+    res.send('Stress test')
+  })
+
   .listen(env.port, () => {
     console.log(`Listening to port ${env.port}`)
   })

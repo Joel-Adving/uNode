@@ -1,4 +1,4 @@
-import { HttpResponse } from 'uWebSockets.js'
+import { HttpRequest, HttpResponse } from 'uWebSockets.js'
 
 export function parseBody<T>(res: HttpResponse): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -22,4 +22,15 @@ export function parseBody<T>(res: HttpResponse): Promise<T> {
       reject(new Error('Request aborted'))
     })
   })
+}
+
+export function getCookie(req: HttpRequest, res: HttpResponse, name: string): string {
+  res.cookies ??= req.getHeader('cookie')
+  return (
+    res.cookies &&
+    res.cookies.match(
+      // @ts-ignore
+      (getCookie[name] ??= new RegExp(`(^|;)\\s*${name}\\s*=\\s*([^;]+)`))
+    )?.[2]
+  )
 }

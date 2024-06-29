@@ -2,7 +2,7 @@ import uWS, { us_listen_socket } from 'uWebSockets.js'
 import { HttpRequest, HttpResponse } from 'uWebSockets.js'
 import { sendFile } from './utils/file'
 import { HttpMethod, IApp, ILogger, Middleware, Request, Response } from './types'
-import { parseBody } from './utils/uws-utils'
+import { getCookie, parseBody } from './utils/uws-utils'
 
 export class App {
   app: IApp
@@ -39,6 +39,7 @@ export class App {
 
   private patchRequest(req: Request, res: HttpResponse) {
     req.body = async <T>() => parseBody<T>(res)
+    req.getCookie = (name: string) => getCookie(req, res, name)
   }
 
   private patchResponse(res: Response, req: HttpRequest) {

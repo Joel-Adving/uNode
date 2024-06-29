@@ -1,9 +1,8 @@
-import { HttpRequest, HttpResponse } from 'uWebSockets.js'
-import { getIpAddress } from './utils/networking'
+import { Request, Response } from './types'
 
-export function middleware(req: HttpRequest, res: HttpResponse, next: () => void) {
-  console.log(
-    `${req.getMethod().toUpperCase()}: ${req.getUrl()} -> ${getIpAddress(req, res)} - ${req.getHeader('user-agent')}`
-  )
+export function middleware(req: Request, res: Response, next: () => void) {
+  // console.log(
+  //   `${req.getMethod().toUpperCase()}: ${req.getUrl()} -> ${getIpAddress(req, res)} - ${req.getHeader('user-agent')}`
+  // )
   next()
 }
