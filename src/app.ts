@@ -1,5 +1,4 @@
 import uWS, { us_listen_socket } from 'uWebSockets.js'
-import { HttpRequest, HttpResponse } from 'uWebSockets.js'
 import { sendFile } from './utils/file'
 import { HttpMethod, IApp, ILogger, Middleware, Request, Response } from './types'
 import { getCookie, parseBody } from './utils/uws-utils'
