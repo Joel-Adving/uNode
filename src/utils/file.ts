@@ -2,15 +2,13 @@ import path from 'path'
 import { lookup } from 'mrmime'
 import { createReadStream, lstatSync, Stats } from 'fs'
 import { HttpResponse, HttpRequest } from 'uWebSockets.js'
-import { fileURLToPath } from 'url'
 
 export function serveStatic(dir: string) {
   return (req: HttpRequest, res: HttpResponse) => {
     try {
-      const _dir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../', dir)
       const url = req.getUrl().slice(1) || 'index.html'
-      const filePath = path.resolve(_dir, url)
-      const isFileOutsideDir = filePath.indexOf(path.resolve(_dir)) !== 0
+      const filePath = path.resolve(dir, url)
+      const isFileOutsideDir = filePath.indexOf(path.resolve(dir)) !== 0
 
       if (isFileOutsideDir) {
         return res.writeStatus('403').res.end()

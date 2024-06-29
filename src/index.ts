@@ -12,7 +12,7 @@ const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../.
 
 new App()
   .use(middleware)
-  .get('/*', serveStatic('public'))
+  .get('/*', serveStatic(path.resolve(rootDir, 'public')))
 
   .get('/stress-test', (req, res) => {
     res.send('Hello world')
@@ -26,5 +26,5 @@ new App()
   .group('/users', usersHandler)
 
   .listen(env.port, () => {
-    console.log(`Listening to port ${env.port}`)
+    console.log(`Listening to port ${env.port} \nOpen in browser http://localhost:${env.port}`)
   })
