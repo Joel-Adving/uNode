@@ -1,10 +1,11 @@
-import { HttpRequest, HttpResponse } from 'uWebSockets.js'
 import { Router } from '../app'
 import { usersDb } from '../db/queries'
-import { parseBody } from '../utils/uws-utils'
 
 export const usersHandler = new Router()
-  .use(userMiddleware)
+  .use((req, res, next) => {
+    console.log('Users middleware')
+    next()
+  })
 
   .get('', (req, res) => {
     const users = usersDb.getUsers()
@@ -12,7 +13,7 @@ export const usersHandler = new Router()
   })
 
   .post('', async (req, res) => {
-    const body = await parseBody<{ username: string; password: string }>(res)
+    const body = await req.body<{ username: string; password: string }>()
     if (!body.username || !body.password) {
       return res.status(400).send('Username or password missing')
     }
@@ -23,8 +24,3 @@ export const usersHandler = new Router()
     usersDb.createUser(body.username, body.password)
     res.send('User created')
   })
-
-function userMiddleware(req: HttpRequest, res: HttpResponse, next: () => void) {
-  console.log('User middleware')
-  next()
-}

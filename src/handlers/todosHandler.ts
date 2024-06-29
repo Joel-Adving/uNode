@@ -1,10 +1,12 @@
-import { HttpRequest, HttpResponse } from 'uWebSockets.js'
 import { Router } from '../app'
 import { todosDb } from '../db/queries'
 import { parseBody } from '../utils/uws-utils'
 
 export const todosHandler = new Router()
-  .use(todosMiddleware)
+  .use((req, res, next) => {
+    console.log('Todos middleware')
+    next()
+  })
 
   .get('', (req, res) => {
     const todos = todosDb.getTodos()
@@ -40,8 +42,3 @@ export const todosHandler = new Router()
     const todos = todosDb.getTodos()
     res.json(todos)
   })
-
-function todosMiddleware(req: HttpRequest, res: HttpResponse, next: () => void) {
-  console.log('Todos middleware')
-  next()
-}
