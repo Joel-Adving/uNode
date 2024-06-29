@@ -14,11 +14,7 @@ export class App {
     this.logger = logger || console
   }
 
-  private handleRequest(
-    method: HttpMethod,
-    path: string,
-    handler: (req: Request, res: Response) => void | Promise<void>
-  ) {
+  private handleRequest(method: HttpMethod, path: string, handler: (req: Request, res: Response) => void) {
     ;(this.app[method] as (path: string, handler: (res: Response, req: Request) => void) => void).call(
       this.app,
       path,
