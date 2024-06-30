@@ -116,20 +116,6 @@ export function setCookie(res: Response, name: string, value: string, options: S
   res.writeHeader('Set-Cookie', cookie)
 }
 
-export function getParameters(req: Request, keys: string[]): Record<string, string> {
-  const obj = {} as Record<string, string>
-  // @ts-ignore
-  const params = req.getParameters()
-  const length = params.length
-
-  for (let i = 0; i < length; ++i) {
-    const key = keys[i]
-    if (key) obj[key] = params[i]
-  }
-
-  return obj
-}
-
 export function getQueryParams(req: Request): { [key: string]: string } {
   const searchParams = new URLSearchParams(req.getQuery())
   const params: { [key: string]: string } = {}
