@@ -8,7 +8,9 @@ uNode is a high-performance Node.js framework built on top of uWebSockets.js, pr
 - Simple and intuitive API
 - Middleware support
 - Route handling
-- Built-in support for handling cookies and request bodies
+- Static file serving
+- Streaming support
+- Handling cookies and request bodies
 
 ### Benchmarks
 
