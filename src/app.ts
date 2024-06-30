@@ -104,14 +104,6 @@ export class App {
     return this
   }
 
-  options(path: string, handler: (req: Request, res: Response) => void) {
-    this.handleRequest('options', path, handler)
-  }
-
-  websocket(pattern: uWS.RecognizedString, behavior: uWS.WebSocketBehavior<unknown>) {
-    this.app.ws(pattern, behavior)
-  }
-
   get(path: string, handler: (req: Request, res: Response) => void) {
     this.handleRequest('get', path, handler)
     return this
@@ -135,6 +127,14 @@ export class App {
   delete(path: string, handler: (req: Request, res: Response) => void) {
     this.handleRequest('del', path, handler)
     return this
+  }
+
+  options(path: string, handler: (req: Request, res: Response) => void) {
+    this.handleRequest('options', path, handler)
+  }
+
+  websocket(pattern: uWS.RecognizedString, behavior: uWS.WebSocketBehavior<unknown>) {
+    this.app.ws(pattern, behavior)
   }
 
   group(path: string, router: Router) {
@@ -165,13 +165,13 @@ export class Router {
   routes: { method: string; path: string; handler: Middleware }[] = []
   middlewares: Middleware[] = []
 
+  private addRoute(method: string, path: string, handler: Middleware) {
+    this.routes.push({ method, path, handler })
+  }
+
   use(handler: Middleware) {
     this.middlewares.push(handler)
     return this
-  }
-
-  private addRoute(method: string, path: string, handler: Middleware) {
-    this.routes.push({ method, path, handler })
   }
 
   get(path: string, handler: Middleware) {
