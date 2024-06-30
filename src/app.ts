@@ -1,6 +1,13 @@
 import uWS, { us_listen_socket } from 'uWebSockets.js'
 import { sendFile } from './file'
-import { HttpMethod, IApp, ILogger, Middleware, Request, Response } from './types'
+import {
+  HttpMethod,
+  IApp,
+  ILogger,
+  Middleware,
+  Request,
+  Response
+} from './types'
 import { getCookie, parseBody } from './utils'
 import { Router } from './router'
 
@@ -31,29 +38,36 @@ export class App {
     this.logger = logger || console
   }
 
-  private handleRequest(method: HttpMethod, path: string, handler: (req: Request, res: Response) => void) {
-    ;(this.app[method] as (path: string, handler: (res: Response, req: Request) => void) => void).call(
-      this.app,
-      path,
-      (res, req) => {
-        res.cork(() => {
-          this.patchRequestResponse(req, res)
-          try {
-            this.executeMiddlewares(req, res, this.middlewares, () => {
-              const result = handler(req, res)
-              if (typeof result === 'string' && !res.done) {
-                res.end(result)
-              }
-            })
-          } catch (error) {
-            this.logger.error(error)
-            if (!res.done) {
-              res.writeStatus('500 Internal Server Error').end('Internal Server Error')
+  private handleRequest(
+    method: HttpMethod,
+    path: string,
+    handler: (req: Request, res: Response) => void
+  ) {
+    ;(
+      this.app[method] as (
+        path: string,
+        handler: (res: Response, req: Request) => void
+      ) => void
+    ).call(this.app, path, (res, req) => {
+      res.cork(() => {
+        this.patchRequestResponse(req, res)
+        try {
+          this.executeMiddlewares(req, res, this.middlewares, () => {
+            const result = handler(req, res)
+            if (typeof result === 'string' && !res.done) {
+              res.end(result)
             }
+          })
+        } catch (error) {
+          this.logger.error(error)
+          if (!res.done) {
+            res
+              .writeStatus('500 Internal Server Error')
+              .end('Internal Server Error')
           }
-        })
-      }
-    )
+        }
+      })
+    })
   }
 
   private patchRequestResponse(req: Request, res: Response) {
@@ -111,7 +125,12 @@ export class App {
     res.sendFile = (filePath) => sendFile(req, res, filePath)
   }
 
-  private executeMiddlewares(req: Request, res: Response, handlers: Middleware[], finalHandler: () => void) {
+  private executeMiddlewares(
+    req: Request,
+    res: Response,
+    handlers: Middleware[],
+    finalHandler: () => void
+  ) {
     const next = (index: number) => {
       if (index < handlers.length) {
         handlers[index](req, res, () => next(index + 1))
@@ -156,15 +175,27 @@ export class App {
     this.handleRequest('options', path, handler)
   }
 
-  websocket(pattern: uWS.RecognizedString, behavior: uWS.WebSocketBehavior<unknown>) {
+  websocket(
+    pattern: uWS.RecognizedString,
+    behavior: uWS.WebSocketBehavior<unknown>
+  ) {
     this.app.ws(pattern, behavior)
   }
 
   group(path: string, router: Router) {
     router.routes.forEach((route) => {
-      this.handleRequest(route.method as HttpMethod, path + route.path, (req, res) => {
-        this.executeMiddlewares(req, res, router.middlewares, () => route.handler(req, res, () => {}))
-      })
+      this.handleRequest(
+        route.method as HttpMethod,
+        path + route.path,
+        (req, res) => {
+          this.executeMiddlewares(req, res, router.middlewares, () => {
+            const result = route.handler(req, res, () => {})
+            if (typeof result === 'string' && !res.done) {
+              res.send(result)
+            }
+          })
+        }
+      )
     })
     return this
   }

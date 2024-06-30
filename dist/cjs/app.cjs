@@ -55,7 +55,9 @@ class App {
                 catch (error) {
                     this.logger.error(error);
                     if (!res.done) {
-                        res.writeStatus('500 Internal Server Error').end('Internal Server Error');
+                        res
+                            .writeStatus('500 Internal Server Error')
+                            .end('Internal Server Error');
                     }
                 }
             });
@@ -151,7 +153,12 @@ class App {
     group(path, router) {
         router.routes.forEach((route) => {
             this.handleRequest(route.method, path + route.path, (req, res) => {
-                this.executeMiddlewares(req, res, router.middlewares, () => route.handler(req, res, () => { }));
+                this.executeMiddlewares(req, res, router.middlewares, () => {
+                    const result = route.handler(req, res, () => { });
+                    if (typeof result === 'string' && !res.done) {
+                        res.send(result);
+                    }
+                });
             });
         });
         return this;

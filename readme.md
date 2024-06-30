@@ -15,19 +15,17 @@ uNode is a high-performance Node.js framework built on top of uWebSockets.js, pr
 ## Installation
 
 ```bash
-npm install "@oki.gg/unode"
+npm i "@oki.gg/unode"
 ```
 
-## Example
+## Examples
 
 Minimalistic chainable API
 
 ```ts
 import { App } from '@oki.gg/unode'
 
-new App()
-  .get('/', () => 'Hello World!')
-  .listen(3000)
+new App().get('/', () => 'Hello World!').listen(3000)
 ```
 
 Or more verbose traditional way
@@ -35,6 +33,21 @@ Or more verbose traditional way
 ```ts
 import { App } from '@oki.gg/unode'
 
+const app = new App()
+
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
+
+app.listen(3000, () => {
+  console.log('Server is running on port 3000')
+})
+```
+
+#### Route groups
+
+```ts
+import { App, Group } from '@oki.gg/unode'
 const app = new App()
 
 app.get('/', (req, res) => {
