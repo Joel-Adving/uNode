@@ -8,7 +8,7 @@ import { HttpMethod, IApp, ILogger, Middleware, Request, Response } from './type
 
 /**
  *
- * This class provides methods for setting up HTTP routes, middleware, and WebSocket behavior.
+ * Main uNode class that provides methods for setting up HTTP routes, middleware, and WebSocket behavior.
  *
  * @example
  * import { App } from '@oki.gg/unode'
