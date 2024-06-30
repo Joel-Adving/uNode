@@ -17,12 +17,10 @@ uNode is a high-performance Node.js framework built on top of uWebSockets.js, pr
 To install `uNode`, use your prefered package manager
 
 ```bash
-pnpm add @oki.gg/unode
-```
-
-```bash
 npm i @oki.gg/unode
 ```
+
+## Example
 
 ```ts
 const { App } = require('@oki.gg/unode')
@@ -34,7 +32,7 @@ new App()
   .listen(3000)
 ```
 
-### Benchmarks
+### Benchmark
 
 All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04, AMD Ryzen 5 5600X 3,7GHz 6-core 12-thread CPU, 32GB RAM
 
