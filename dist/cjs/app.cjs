@@ -83,6 +83,10 @@ class App {
     }
     patchRequestResponse(req, res, paramKeys) {
         res._end = res.end;
+        const headers = {};
+        req.forEach((name, value) => {
+            headers[name] = value;
+        });
         res.onAborted(() => {
             res.done = true;
             if (res.abortEvents) {
@@ -122,7 +126,7 @@ class App {
             }
         };
         res.sendFile = (filePath) => {
-            (0, file_1.sendFile)(req, res, filePath);
+            (0, file_1.sendFile)(headers, res, filePath);
         };
         res.setCookie = (name, value, options) => {
             (0, utils_1.setCookie)(res, name, value, options);

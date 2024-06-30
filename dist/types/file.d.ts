@@ -4,27 +4,14 @@ import { HttpResponse, HttpRequest } from 'uWebSockets.js';
  *
  * @example
  * ```typescript
- * import path from 'path';
- * import { App, serveStatic } from '@oki.gg/unode';
- *
- * const app = new App()
  * const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '.');
  *
  * app.get('/*', serveStatic(path.resolve(rootDir, 'public')));
- *
- * app.listen(3000);
  * ```
  */
 export declare function serveStatic(dir: string): (req: HttpRequest, res: HttpResponse) => any;
 /**
  * Get the file statistics for a given file path.
- *
- * This function retrieves the file statistics such as `lastModified`, `size`, and `contentType`.
- * It returns an object containing these properties if the file exists and is not a directory.
- *
- * @param {string} filePath - The path to the file.
- * @returns {object | undefined} An object containing file statistics or undefined if the file does not exist or is a directory.
- *
  * @example
  * ```typescript
  * const fileStats = getFileStats('/path/to/file.txt');
@@ -51,11 +38,6 @@ export declare function getFileStats(filePath: string): {
  *
  * @example
  * ```typescript
- * import { App } from '@oki.gg/unode';
- * import { getFileStats, streamFile } from './path/to/your/module';
- *
- * const app = new App();
- *
  * app.get('/file', (req, res) => {
  *   const fileStats = getFileStats('/path/to/file.txt');
  *   if (fileStats) {
@@ -63,10 +45,6 @@ export declare function getFileStats(filePath: string): {
  *   } else {
  *     res.writeStatus('404').end('File not found');
  *   }
- * });
- *
- * app.listen(3000, () => {
- *   console.log('Server is running on port 3000');
  * });
  * ```
  */
@@ -79,24 +57,14 @@ export declare function streamFile(res: HttpResponse, fileStats: ReturnType<type
  *
  * @example
  * ```typescript
- * import { App } from '@oki.gg/unode';
- * import { sendFile } from './path/to/your/module';
- *
- * const app = new App();
- *
  * app.get('/file', (req, res) => {
  *   sendFile(req, res, '/path/to/file.txt');
  * });
  *
  * // Alternatively, you can use it directly on the response object:
- *
  * app.get('/file-2', (req, res) => {
  *  res.sendFile('/path/to/file.txt');
  * });
- *
- * app.listen(3000, () => {
- *   console.log('Server is running on port 3000');
- * });
  * ```
  */
-export declare function sendFile(req: HttpRequest, res: HttpResponse, filePath: string): HttpResponse | undefined;
+export declare function sendFile(headers: Record<string, string>, res: HttpResponse, filePath: string): HttpResponse | undefined;

@@ -15,15 +15,9 @@ const fs_1 = require("fs");
  *
  * @example
  * ```typescript
- * import path from 'path';
- * import { App, serveStatic } from '@oki.gg/unode';
- *
- * const app = new App()
  * const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '.');
  *
  * app.get('/*', serveStatic(path.resolve(rootDir, 'public')));
- *
- * app.listen(3000);
  * ```
  */
 function serveStatic(dir) {
@@ -55,13 +49,6 @@ function serveStatic(dir) {
 }
 /**
  * Get the file statistics for a given file path.
- *
- * This function retrieves the file statistics such as `lastModified`, `size`, and `contentType`.
- * It returns an object containing these properties if the file exists and is not a directory.
- *
- * @param {string} filePath - The path to the file.
- * @returns {object | undefined} An object containing file statistics or undefined if the file does not exist or is a directory.
- *
  * @example
  * ```typescript
  * const fileStats = getFileStats('/path/to/file.txt');
@@ -96,11 +83,6 @@ function toArrayBuffer(buffer) {
  *
  * @example
  * ```typescript
- * import { App } from '@oki.gg/unode';
- * import { getFileStats, streamFile } from './path/to/your/module.cjs';
- *
- * const app = new App();
- *
  * app.get('/file', (req, res) => {
  *   const fileStats = getFileStats('/path/to/file.txt');
  *   if (fileStats) {
@@ -108,10 +90,6 @@ function toArrayBuffer(buffer) {
  *   } else {
  *     res.writeStatus('404').end('File not found');
  *   }
- * });
- *
- * app.listen(3000, () => {
- *   console.log('Server is running on port 3000');
  * });
  * ```
  */
@@ -157,33 +135,23 @@ function streamFile(res, fileStats) {
  *
  * @example
  * ```typescript
- * import { App } from '@oki.gg/unode';
- * import { sendFile } from './path/to/your/module.cjs';
- *
- * const app = new App();
- *
  * app.get('/file', (req, res) => {
  *   sendFile(req, res, '/path/to/file.txt');
  * });
  *
  * // Alternatively, you can use it directly on the response object:
- *
  * app.get('/file-2', (req, res) => {
  *  res.sendFile('/path/to/file.txt');
  * });
- *
- * app.listen(3000, () => {
- *   console.log('Server is running on port 3000');
- * });
  * ```
  */
-function sendFile(req, res, filePath) {
+function sendFile(headers, res, filePath) {
     const fileStats = getFileStats(filePath);
     if (!fileStats) {
         return res.writeStatus('404').end('File not found');
     }
     const { contentType, lastModified } = fileStats;
-    const ifModifiedSince = req.getHeader('if-modified-since');
+    const ifModifiedSince = headers['if-modified-since'];
     if (ifModifiedSince === lastModified) {
         return res.writeStatus('304').end();
     }
