@@ -21,6 +21,8 @@ export interface ILogger {
 export interface Request extends HttpRequest {
   body: <T>() => Promise<T>
   getCookie: (name: string) => string
+  getQueryParams: () => { [key: string]: string }
+  params: { [key: string]: string }
 }
 
 export interface Response extends HttpResponse {

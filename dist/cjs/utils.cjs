@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseBody = parseBody;
 exports.getCookie = getCookie;
 exports.setCookie = setCookie;
+exports.getParameters = getParameters;
+exports.getQueryParams = getQueryParams;
 /**
  * Parse the JSON body of the request.
  *
@@ -101,4 +103,24 @@ function setCookie(res, name, value, options = {}) {
         cookie += `; SameSite=${sameSite}`;
     }
     res.writeHeader('Set-Cookie', cookie);
+}
+function getParameters(req, keys) {
+    const obj = {};
+    // @ts-ignore
+    const params = req.getParameters();
+    const length = params.length;
+    for (let i = 0; i < length; ++i) {
+        const key = keys[i];
+        if (key)
+            obj[key] = params[i];
+    }
+    return obj;
+}
+function getQueryParams(req) {
+    const searchParams = new URLSearchParams(req.getQuery());
+    const params = {};
+    searchParams.forEach((value, key) => {
+        params[key] = value;
+    });
+    return params;
 }

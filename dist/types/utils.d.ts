@@ -51,3 +51,7 @@ export declare function parseBody<T>(res: Response): Promise<T>;
  */
 export declare function getCookie(req: Request, res: Response, name: string): string;
 export declare function setCookie(res: Response, name: string, value: string, options?: SetCookieOptions): void;
+export declare function getParameters(req: Request, keys: string[]): Record<string, string>;
+export declare function getQueryParams(req: Request): {
+    [key: string]: string;
+};

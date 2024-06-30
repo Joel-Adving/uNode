@@ -34,9 +34,11 @@ export declare class Router {
         method: string;
         path: string;
         handler: Middleware;
+        paramKeys: string[];
     }[];
     middlewares: Middleware[];
     private addRoute;
+    private extractKeysFromPath;
     use(handler: Middleware): this;
     get(path: string, handler: Middleware): this;
     post(path: string, handler: Middleware): this;

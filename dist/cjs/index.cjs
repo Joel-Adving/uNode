@@ -22,4 +22,5 @@ Object.defineProperty(exports, "Router", { enumerable: true, get: function () { 
 var networking_1 = require("./networking.cjs");
 Object.defineProperty(exports, "getIpAddress", { enumerable: true, get: function () { return networking_1.getIpAddress; } });
 __exportStar(require("./file.cjs"), exports);
+__exportStar(require("./utils.cjs"), exports);
 __exportStar(require("./types.cjs"), exports);

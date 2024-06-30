@@ -35,11 +35,25 @@ export class Router {
     method: string
     path: string
     handler: Middleware
+    paramKeys: string[]
   }[] = []
   middlewares: Middleware[] = []
 
   private addRoute(method: string, path: string, handler: Middleware) {
-    this.routes.push({ method, path, handler })
+    const paramKeys = this.extractKeysFromPath(path)
+
+    this.routes.push({ method, path, handler, paramKeys })
+  }
+
+  private extractKeysFromPath(path: string): string[] {
+    const keys: string[] = []
+    const segments = path.split('/')
+    for (const segment of segments) {
+      if (segment.startsWith(':')) {
+        keys.push(segment.substring(1))
+      }
+    }
+    return keys
   }
 
   use(handler: Middleware) {

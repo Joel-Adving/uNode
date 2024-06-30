@@ -97,3 +97,23 @@ export function setCookie(res, name, value, options = {}) {
     }
     res.writeHeader('Set-Cookie', cookie);
 }
+export function getParameters(req, keys) {
+    const obj = {};
+    // @ts-ignore
+    const params = req.getParameters();
+    const length = params.length;
+    for (let i = 0; i < length; ++i) {
+        const key = keys[i];
+        if (key)
+            obj[key] = params[i];
+    }
+    return obj;
+}
+export function getQueryParams(req) {
+    const searchParams = new URLSearchParams(req.getQuery());
+    const params = {};
+    searchParams.forEach((value, key) => {
+        params[key] = value;
+    });
+    return params;
+}

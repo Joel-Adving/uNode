@@ -23,7 +23,7 @@ import uWS from 'uWebSockets.js';
 import { cpus } from 'os';
 import cluster from 'cluster';
 import { sendFile } from './file.mjs';
-import { getCookie, parseBody, setCookie } from './utils.mjs';
+import { getCookie, getQueryParams, parseBody, setCookie } from './utils.mjs';
 /**
  *
  * Main uNode class that provides methods for setting up HTTP routes, middleware, and WebSocket behavior.
@@ -48,13 +48,13 @@ export class App {
             throw new Error(`Threads count cannot be higher than the number of current CPU threads. Max allowed number of threads: ${cpus().length}`);
         }
     }
-    handleRequest(method, path, handler) {
+    handleRequest(method, path, handler, paramKeys = []) {
         ;
         this.app[method].call(this.app, path, (res, req) => {
             // Cork the handler to improve performance when writing to the response
             res.cork(() => {
                 // Add custom properties and methods to the request and response objects
-                this.patchRequestResponse(req, res);
+                this.patchRequestResponse(req, res, paramKeys);
                 try {
                     // Execute middlewares before the route handler
                     this.executeMiddlewares(req, res, this.middlewares, () => {
@@ -75,7 +75,7 @@ export class App {
             });
         });
     }
-    patchRequestResponse(req, res) {
+    patchRequestResponse(req, res, paramKeys) {
         res._end = res.end;
         res.onAborted(() => {
             res.done = true;
@@ -97,47 +97,35 @@ export class App {
             res._end(body);
             return res;
         };
-        if (res.constructor._extended !== true) {
-            const HttpResponse = res.constructor;
-            HttpResponse._extended = true;
-            HttpResponse.prototype.send = function (body) {
-                return this.end(body);
-            };
-            HttpResponse.prototype.status = function (code) {
-                this.writeStatus(String(code));
-                return this;
-            };
-            HttpResponse.prototype.header = function (key, value) {
-                this.writeHeader(key, value);
-                return this;
-            };
-            HttpResponse.prototype.json = function (body) {
-                this.writeHeader('Content-Type', 'application/json');
-                try {
-                    this.end(JSON.stringify(body));
-                }
-                catch (error) {
-                    throw new Error('Failed to stringify JSON', { cause: error });
-                }
-            };
-            HttpResponse.prototype.sendFile = function (filePath) {
-                sendFile(req, this, filePath);
-            };
-            HttpResponse.prototype.setCookie = function (name, value, options) {
-                setCookie(this, name, value, options);
-            };
-        }
-        if (req.constructor._extended !== true) {
-            const HttpRequest = req.constructor;
-            HttpRequest._extended = true;
-            HttpRequest.prototype.body = function () {
-                return __awaiter(this, void 0, void 0, function* () {
-                    return parseBody(res);
-                });
-            };
-            HttpRequest.prototype.getCookie = function (name) {
-                return getCookie(req, res, name);
-            };
+        res.send = (body) => res.end(body);
+        res.status = (code) => {
+            res.writeStatus(String(code));
+            return res;
+        };
+        res.header = (key, value) => {
+            res.writeHeader(key, value);
+            return res;
+        };
+        res.json = (body) => {
+            res.writeHeader('Content-Type', 'application/json');
+            try {
+                res.end(JSON.stringify(body));
+            }
+            catch (error) {
+                throw new Error('Failed to stringify JSON', { cause: error });
+            }
+        };
+        res.sendFile = (filePath) => {
+            sendFile(req, res, filePath);
+        };
+        res.setCookie = (name, value, options) => {
+            setCookie(res, name, value, options);
+        };
+        req.body = () => __awaiter(this, void 0, void 0, function* () { return parseBody(res); });
+        req.getCookie = (name) => getCookie(req, res, name);
+        req.getQueryParams = () => getQueryParams(req);
+        if (paramKeys.length > 0) {
+            req.params = this.extractParams(req, paramKeys);
         }
     }
     executeMiddlewares(req, res, handlers, finalHandler) {
@@ -151,6 +139,23 @@ export class App {
         };
         next(0);
     }
+    extractKeysFromPath(path) {
+        const keys = [];
+        const segments = path.split('/');
+        for (const segment of segments) {
+            if (segment.startsWith(':')) {
+                keys.push(segment.substring(1));
+            }
+        }
+        return keys;
+    }
+    extractParams(req, paramKeys) {
+        const params = {};
+        paramKeys.forEach((key, index) => {
+            params[key] = req.getParameter(index);
+        });
+        return params;
+    }
     group(path, router) {
         router.routes.forEach((route) => {
             this.handleRequest(route.method, path + route.path, (req, res) => {
@@ -160,7 +165,7 @@ export class App {
                         res.end(result);
                     }
                 });
-            });
+            }, route.paramKeys);
         });
         return this;
     }
@@ -169,27 +174,27 @@ export class App {
         return this;
     }
     get(path, handler) {
-        this.handleRequest('get', path, handler);
+        this.handleRequest('get', path, handler, this.extractKeysFromPath(path));
         return this;
     }
     post(path, handler) {
-        this.handleRequest('post', path, handler);
+        this.handleRequest('post', path, handler, this.extractKeysFromPath(path));
         return this;
     }
     patch(path, handler) {
-        this.handleRequest('patch', path, handler);
+        this.handleRequest('patch', path, handler, this.extractKeysFromPath(path));
         return this;
     }
     put(path, handler) {
-        this.handleRequest('put', path, handler);
+        this.handleRequest('put', path, handler, this.extractKeysFromPath(path));
         return this;
     }
     delete(path, handler) {
-        this.handleRequest('del', path, handler);
+        this.handleRequest('del', path, handler, this.extractKeysFromPath(path));
         return this;
     }
     options(path, handler) {
-        this.handleRequest('options', path, handler);
+        this.handleRequest('options', path, handler, this.extractKeysFromPath(path));
     }
     websocket(pattern, behavior) {
         this.app.ws(pattern, behavior);

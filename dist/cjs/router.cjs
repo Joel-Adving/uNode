@@ -37,7 +37,18 @@ class Router {
         this.middlewares = [];
     }
     addRoute(method, path, handler) {
-        this.routes.push({ method, path, handler });
+        const paramKeys = this.extractKeysFromPath(path);
+        this.routes.push({ method, path, handler, paramKeys });
+    }
+    extractKeysFromPath(path) {
+        const keys = [];
+        const segments = path.split('/');
+        for (const segment of segments) {
+            if (segment.startsWith(':')) {
+                keys.push(segment.substring(1));
+            }
+        }
+        return keys;
     }
     use(handler) {
         this.middlewares.push(handler);

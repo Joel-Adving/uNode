@@ -95,6 +95,16 @@ app.get('/file', (req, res) => {
 app.get('/*', serveStatic('path/to/directory'))
 ```
 
+#### Params and query
+
+```ts
+app.get('/:id', (req, res) => {
+  const id = req.params.id
+  const query = req.getQueryParams()
+  res.json({ id, query })
+})
+```
+
 #### Cookies
 
 ```ts

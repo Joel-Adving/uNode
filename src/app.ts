@@ -3,8 +3,8 @@ import { cpus } from 'os'
 import cluster from 'cluster'
 import { Router } from './router'
 import { sendFile } from './file'
-import { getCookie, parseBody, setCookie } from './utils'
-import { HttpMethod, IApp, ILogger, Middleware, Request, Response, SetCookieOptions } from './types'
+import { getCookie, getQueryParams, parseBody, setCookie } from './utils'
+import { HttpMethod, IApp, ILogger, Middleware, Request, Response } from './types'
 
 /**
  *
@@ -39,7 +39,12 @@ export class App {
     }
   }
 
-  private handleRequest(method: HttpMethod, path: string, handler: (req: Request, res: Response) => void) {
+  private handleRequest(
+    method: HttpMethod,
+    path: string,
+    handler: (req: Request, res: Response) => void,
+    paramKeys: string[] = []
+  ) {
     ;(this.app[method] as (path: string, handler: (res: Response, req: Request) => void) => void).call(
       this.app,
       path,
@@ -47,7 +52,7 @@ export class App {
         // Cork the handler to improve performance when writing to the response
         res.cork(() => {
           // Add custom properties and methods to the request and response objects
-          this.patchRequestResponse(req, res)
+          this.patchRequestResponse(req, res, paramKeys)
           try {
             // Execute middlewares before the route handler
             this.executeMiddlewares(req, res, this.middlewares, () => {
@@ -69,7 +74,7 @@ export class App {
     )
   }
 
-  private patchRequestResponse(req: Request, res: Response) {
+  private patchRequestResponse(req: Request, res: Response, paramKeys: string[]) {
     res._end = res.end
 
     res.onAborted(() => {
@@ -95,53 +100,43 @@ export class App {
       return res
     }
 
-    if ((res.constructor as any)._extended !== true) {
-      const HttpResponse = res.constructor as any
-      HttpResponse._extended = true
+    res.send = (body) => res.end(body)
 
-      HttpResponse.prototype.send = function (body: string) {
-        return this.end(body)
-      }
+    res.status = (code) => {
+      res.writeStatus(String(code))
+      return res
+    }
 
-      HttpResponse.prototype.status = function (code: number) {
-        this.writeStatus(String(code))
-        return this
-      }
+    res.header = (key, value) => {
+      res.writeHeader(key, value)
+      return res
+    }
 
-      HttpResponse.prototype.header = function (key: string, value: string) {
-        this.writeHeader(key, value)
-        return this
-      }
-
-      HttpResponse.prototype.json = function (body: unknown) {
-        this.writeHeader('Content-Type', 'application/json')
-        try {
-          this.end(JSON.stringify(body))
-        } catch (error) {
-          throw new Error('Failed to stringify JSON', { cause: error })
-        }
-      }
-
-      HttpResponse.prototype.sendFile = function (filePath: string) {
-        sendFile(req, this, filePath)
-      }
-
-      HttpResponse.prototype.setCookie = function (name: string, value: string, options?: SetCookieOptions) {
-        setCookie(this, name, value, options)
+    res.json = (body) => {
+      res.writeHeader('Content-Type', 'application/json')
+      try {
+        res.end(JSON.stringify(body))
+      } catch (error) {
+        throw new Error('Failed to stringify JSON', { cause: error })
       }
     }
 
-    if ((req.constructor as any)._extended !== true) {
-      const HttpRequest = req.constructor as any
-      HttpRequest._extended = true
+    res.sendFile = (filePath) => {
+      sendFile(req, res, filePath)
+    }
 
-      HttpRequest.prototype.body = async function <T>() {
-        return parseBody<T>(res)
-      }
+    res.setCookie = (name, value, options) => {
+      setCookie(res, name, value, options)
+    }
 
-      HttpRequest.prototype.getCookie = function (name: string) {
-        return getCookie(req, res, name)
-      }
+    req.body = async <T>() => parseBody<T>(res)
+
+    req.getCookie = (name: string) => getCookie(req, res, name)
+
+    req.getQueryParams = () => getQueryParams(req)
+
+    if (paramKeys.length > 0) {
+      req.params = this.extractParams(req, paramKeys)
     }
   }
 
@@ -156,16 +151,40 @@ export class App {
     next(0)
   }
 
+  private extractKeysFromPath(path: string): string[] {
+    const keys: string[] = []
+    const segments = path.split('/')
+    for (const segment of segments) {
+      if (segment.startsWith(':')) {
+        keys.push(segment.substring(1))
+      }
+    }
+    return keys
+  }
+
+  private extractParams(req: Request, paramKeys: string[]): { [key: string]: string } {
+    const params: { [key: string]: string } = {}
+    paramKeys.forEach((key, index) => {
+      params[key] = req.getParameter(index)
+    })
+    return params
+  }
+
   group(path: string, router: Router) {
     router.routes.forEach((route) => {
-      this.handleRequest(route.method as HttpMethod, path + route.path, (req, res) => {
-        this.executeMiddlewares(req, res, router.middlewares, () => {
-          const result = route.handler(req, res, () => {})
-          if (typeof result === 'string' && !res.done) {
-            res.end(result)
-          }
-        })
-      })
+      this.handleRequest(
+        route.method as HttpMethod,
+        path + route.path,
+        (req, res) => {
+          this.executeMiddlewares(req, res, router.middlewares, () => {
+            const result = route.handler(req, res, () => {})
+            if (typeof result === 'string' && !res.done) {
+              res.end(result)
+            }
+          })
+        },
+        route.paramKeys
+      )
     })
     return this
   }
@@ -176,32 +195,32 @@ export class App {
   }
 
   get(path: string, handler: (req: Request, res: Response) => void) {
-    this.handleRequest('get', path, handler)
+    this.handleRequest('get', path, handler, this.extractKeysFromPath(path))
     return this
   }
 
   post(path: string, handler: (req: Request, res: Response) => void) {
-    this.handleRequest('post', path, handler)
+    this.handleRequest('post', path, handler, this.extractKeysFromPath(path))
     return this
   }
 
   patch(path: string, handler: (req: Request, res: Response) => void) {
-    this.handleRequest('patch', path, handler)
+    this.handleRequest('patch', path, handler, this.extractKeysFromPath(path))
     return this
   }
 
   put(path: string, handler: (req: Request, res: Response) => void) {
-    this.handleRequest('put', path, handler)
+    this.handleRequest('put', path, handler, this.extractKeysFromPath(path))
     return this
   }
 
   delete(path: string, handler: (req: Request, res: Response) => void) {
-    this.handleRequest('del', path, handler)
+    this.handleRequest('del', path, handler, this.extractKeysFromPath(path))
     return this
   }
 
   options(path: string, handler: (req: Request, res: Response) => void) {
-    this.handleRequest('options', path, handler)
+    this.handleRequest('options', path, handler, this.extractKeysFromPath(path))
   }
 
   websocket(pattern: uWS.RecognizedString, behavior: uWS.WebSocketBehavior<unknown>) {

@@ -26,6 +26,8 @@ export declare class App {
     private handleRequest;
     private patchRequestResponse;
     private executeMiddlewares;
+    private extractKeysFromPath;
+    private extractParams;
     group(path: string, router: Router): this;
     use(handler: Middleware): this;
     get(path: string, handler: (req: Request, res: Response) => void): this;
