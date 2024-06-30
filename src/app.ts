@@ -29,13 +29,7 @@ export class App {
   middlewares: Middleware[] = []
   #threads: number
 
-  constructor({
-    logger,
-    threads
-  }: {
-    logger?: ILogger
-    threads?: number
-  } = {}) {
+  constructor({ logger, threads }: { logger?: ILogger; threads?: number } = {}) {
     this.app = uWS.App() as IApp
     this.logger = logger || console
     this.#threads = threads || 1
