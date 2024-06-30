@@ -34,7 +34,6 @@ export class App {
     threads
   }: {
     logger?: ILogger
-    multithreaded?: boolean
     threads?: number
   } = {}) {
     this.app = uWS.App() as IApp
