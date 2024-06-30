@@ -35,7 +35,6 @@ export class App {
 
   private patchRequestResponse(req: Request, res: Response) {
     req.body = async <T>() => parseBody<T>(res)
-
     req.getCookie = (name: string) => getCookie(req, res, name)
 
     res._end = res.end
