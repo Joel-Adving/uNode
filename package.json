@@ -1,6 +1,6 @@
 {
   "name": "@oki.gg/unode",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A high-performance Node.js framework built on uWebSockets.js for fast and efficient web servers.",
   "keywords": [
     "node",
@@ -11,7 +11,8 @@
   ],
   "author": "Joel",
   "license": "MIT",
-  "main": "dist/src/index.js",
+  "main": "index.cjs",
+  "module": "dist/src/index.js",
   "type": "module",
   "scripts": {
     "build": "swc src -d dist",
