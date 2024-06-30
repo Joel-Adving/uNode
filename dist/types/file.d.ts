@@ -67,4 +67,4 @@ export declare function streamFile(res: HttpResponse, fileStats: ReturnType<type
  * });
  * ```
  */
-export declare function sendFile(headers: Record<string, string>, res: HttpResponse, filePath: string): HttpResponse | undefined;
+export declare function sendFile(ifModifiedSince: string, res: HttpResponse, filePath: string): HttpResponse | undefined;

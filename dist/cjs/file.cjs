@@ -145,13 +145,12 @@ function streamFile(res, fileStats) {
  * });
  * ```
  */
-function sendFile(headers, res, filePath) {
+function sendFile(ifModifiedSince, res, filePath) {
     const fileStats = getFileStats(filePath);
     if (!fileStats) {
         return res.writeStatus('404').end('File not found');
     }
     const { contentType, lastModified } = fileStats;
-    const ifModifiedSince = headers['if-modified-since'];
     if (ifModifiedSince === lastModified) {
         return res.writeStatus('304').end();
     }

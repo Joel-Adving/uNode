@@ -83,10 +83,6 @@ class App {
     }
     patchRequestResponse(req, res, paramKeys) {
         res._end = res.end;
-        const headers = {};
-        req.forEach((name, value) => {
-            headers[name] = value;
-        });
         res.onAborted(() => {
             res.done = true;
             if (res.abortEvents) {
@@ -125,8 +121,9 @@ class App {
                 throw new Error('Failed to stringify JSON', { cause: error });
             }
         };
+        const ifModifiedSince = req.getHeader('if-modified-since');
         res.sendFile = (filePath) => {
-            (0, file_1.sendFile)(headers, res, filePath);
+            (0, file_1.sendFile)(ifModifiedSince, res, filePath);
         };
         res.setCookie = (name, value, options) => {
             (0, utils_1.setCookie)(res, name, value, options);
