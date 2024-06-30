@@ -1,11 +1,16 @@
 {
-  "name": "fast-node-api",
+  "name": "unode",
   "version": "1.0.0",
-  "description": "",
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "main": "index.js",
+  "description": "A high-performance Node.js framework built on uWebSockets.js for fast and efficient web servers.",
+  "keywords": [
+    "uWebSockets.js",
+    "Node.js",
+    "Framework",
+    "Web Server"
+  ],
+  "author": "Joel",
+  "license": "MIT",
+  "main": "dis/src/index.js",
   "type": "module",
   "scripts": {
     "build": "swc src -d dist",
