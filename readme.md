@@ -29,7 +29,7 @@ import { App } from '@oki.gg/unode'
 new App().get('/', () => 'Hello World!').listen(3000)
 ```
 
-#### Or more verbose traditional way
+#### Or a more verbose traditional way
 
 ```ts
 import { App } from '@oki.gg/unode'
@@ -58,7 +58,9 @@ const group = new Router()
   .get('/:id', () => 'Get by id')
   .delete('/:id', () => 'Deleted')
 
-app.group('/api', group).listen(3000, () => console.log('Server running on port 3000'))
+app
+  .group('/api', group)
+  .listen(3000, () => console.log('Server running on port 3000'))
 ```
 
 #### Middleware
@@ -70,7 +72,7 @@ app.use((req, res, next) => {
 })
 ```
 
-#### File serving
+#### Sending files
 
 ```ts
 app.get('/file', (req, res) => {
@@ -78,11 +80,10 @@ app.get('/file', (req, res) => {
 })
 ```
 
-#### Serve public folder with static files
+#### Serve files from a directory
 
 ```ts
-const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '.')
-app.get('/*', serveStatic(path.resolve(rootDir, 'public')))
+app.get('/*', serveStatic('path/to/directory'))
 ```
 
 ## Performance Benchmark
