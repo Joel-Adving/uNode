@@ -29,17 +29,13 @@ import { getCookie, parseBody } from './utils.mjs';
  * This class provides methods for setting up HTTP routes, middleware, and WebSocket behavior.
  *
  * @example
- * import { App } from '@oki.gg/unode';
+ * import { App } from '@oki.gg/unode'
  *
- * const app = new App();
+ * const app = new App({ threads: 4 })
  *
- * app.get('/', (req, res) => {
- *   res.send('Hello, World!');
- * });
+ * app.get('/', () => 'Hello, World!')
  *
- * app.listen(3000, () => {
- *   console.log('Server is running on port 3000');
- * });
+ * app.listen(3000)
  */
 export class App {
     constructor({ logger, threads } = {}) {
@@ -55,7 +51,7 @@ export class App {
     handleRequest(method, path, handler) {
         ;
         this.app[method].call(this.app, path, (res, req) => {
-            // Cork the entire handler to greatly improve performance when writing to the response many times
+            // Cork the handler to improve performance when writing to the response
             res.cork(() => {
                 // Add custom properties and methods to the request and response objects
                 this.patchRequestResponse(req, res);

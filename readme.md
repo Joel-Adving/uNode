@@ -8,10 +8,10 @@ uNode is a high-performance Node.js framework built on top of uWebSockets.js, pr
 - built in multi-threading support
 - Simple and intuitive API
 - Route groups
-- Middleware support
-- Static file serving
-- Streaming support
-- Handling of cookies and request bodies
+- Middleware
+- File serving
+- Streaming
+- Cookies and request body bodies
 
 ## Installation
 
@@ -24,23 +24,23 @@ npm i "@oki.gg/unode"
 #### Minimalistic chainable API
 
 ```ts
-import { App } from '@oki.gg/unode'
-
-new App().get('/', () => 'Hello World!').listen(3000)
+new App()
+  .get('/', () => 'Hello World!')
+  .listen(3000)
 ```
 
 #### Or a more verbose traditional way
 
 ```ts
-import { App } from '@oki.gg/unode'
-
 const app = new App()
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
-app.listen(3000, () => console.log('Server is running on port 3000'))
+app.listen(3000, () => {
+  console.log('Server is running on port 3000')
+})
 ```
 
 #### Multi-threaded server
@@ -60,7 +60,7 @@ const group = new Router()
 
 app
   .group('/api', group)
-  .listen(3000, () => console.log('Server running on port 3000'))
+  .listen(3000)
 ```
 
 #### Middleware
@@ -97,10 +97,8 @@ All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04,
 ### Result
 
 ```
-
 160091.185 requests/second (multi-threaded, 4 threads)
 74662.875 requests/second (single-threaded)
-
 ```
 
 ## Comparison with other relevant frameworks
@@ -108,79 +106,59 @@ All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04,
 #### uNode (multi-threaded, 4 threads) (uWebSockets.js)
 
 ```
-
 160091.185 requests/second
-
 ```
 
 #### Go net/http
 
 ```
-
 131820.081 requests/second
-
 ```
 
 #### ASP.NET Core minimal API
 
 ```
-
 123631.414 requests/second
-
 ```
 
 #### uWebSockets.js
 
 ```
-
 76586.927 requests/second
-
 ```
 
 #### uNode (single-threaded) (uWebSockets.js)
 
 ```
-
 74662.875 requests/second
-
 ```
 
 #### hyper-express (uWebSockets.js)
 
 ```
-
 65598.721 requests/second
-
 ```
 
 #### Bun (Buns http server is also built on uWebSockets.js)
 
 ```
-
 64097.835 requests/second
-
 ```
 
 #### ElysiaJS
 
 ```
-
 63300.917 requests/second
-
 ```
 
 #### Node.js standard http library
 
 ```
-
 32322.931 requests/second
-
 ```
 
 #### Express.js
 
 ```
-
 9322.392 requests/second
-
 ```

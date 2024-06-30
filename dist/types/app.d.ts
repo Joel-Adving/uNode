@@ -6,17 +6,13 @@ import { IApp, ILogger, Middleware, Request, Response } from './types';
  * This class provides methods for setting up HTTP routes, middleware, and WebSocket behavior.
  *
  * @example
- * import { App } from '@oki.gg/unode';
+ * import { App } from '@oki.gg/unode'
  *
- * const app = new App();
+ * const app = new App({ threads: 4 })
  *
- * app.get('/', (req, res) => {
- *   res.send('Hello, World!');
- * });
+ * app.get('/', () => 'Hello, World!')
  *
- * app.listen(3000, () => {
- *   console.log('Server is running on port 3000');
- * });
+ * app.listen(3000)
  */
 export declare class App {
     #private;
@@ -25,7 +21,6 @@ export declare class App {
     middlewares: Middleware[];
     constructor({ logger, threads }?: {
         logger?: ILogger;
-        multithreaded?: boolean;
         threads?: number;
     });
     private handleRequest;
