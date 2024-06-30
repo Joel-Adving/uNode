@@ -154,7 +154,12 @@ class App {
     listen(port, cb) {
         this.app.listen(port, (token) => {
             if (token) {
-                cb(token);
+                if (cb) {
+                    cb(token);
+                }
+                else {
+                    this.logger.log(`Server is running on port ${port}`);
+                }
             }
             else {
                 throw new Error('Failed to listen to port');

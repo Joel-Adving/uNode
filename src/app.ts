@@ -164,10 +164,14 @@ export class App {
     return this
   }
 
-  listen(port: number, cb: (listenSocket: us_listen_socket) => void) {
+  listen(port: number, cb?: (listenSocket: us_listen_socket) => void) {
     this.app.listen(port, (token) => {
       if (token) {
-        cb(token)
+        if (cb) {
+          cb(token)
+        } else {
+          this.logger.log(`Server is running on port ${port}`)
+        }
       } else {
         throw new Error('Failed to listen to port')
       }

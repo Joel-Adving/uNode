@@ -37,6 +37,6 @@ export declare class App {
     options(path: string, handler: (req: Request, res: Response) => void): void;
     websocket(pattern: uWS.RecognizedString, behavior: uWS.WebSocketBehavior<unknown>): void;
     group(path: string, router: Router): this;
-    listen(port: number, cb: (listenSocket: us_listen_socket) => void): void;
+    listen(port: number, cb?: (listenSocket: us_listen_socket) => void): void;
     close(): void;
 }
