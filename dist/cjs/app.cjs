@@ -103,28 +103,48 @@ class App {
             res._end(body);
             return res;
         };
-        res.send = (body) => res.end(body);
-        res.status = (code) => {
-            res.writeStatus(String(code));
-            return res;
-        };
-        res.header = (key, value) => {
-            res.writeHeader(key, value);
-            return res;
-        };
-        res.json = (body) => {
-            res.writeHeader('Content-Type', 'application/json');
-            try {
-                res.end(JSON.stringify(body));
-            }
-            catch (error) {
-                throw new Error('Failed to stringify JSON', { cause: error });
-            }
-        };
-        res.sendFile = (filePath) => (0, file_1.sendFile)(req, res, filePath);
-        res.setCookie = (name, value, options) => (0, utils_1.setCookie)(res, name, value, options);
-        req.body = () => __awaiter(this, void 0, void 0, function* () { return (0, utils_1.parseBody)(res); });
-        req.getCookie = (name) => (0, utils_1.getCookie)(req, res, name);
+        if (res.constructor._extended !== true) {
+            const HttpResponse = res.constructor;
+            HttpResponse._extended = true;
+            HttpResponse.prototype.send = function (body) {
+                return this.end(body);
+            };
+            HttpResponse.prototype.status = function (code) {
+                this.writeStatus(String(code));
+                return this;
+            };
+            HttpResponse.prototype.header = function (key, value) {
+                this.writeHeader(key, value);
+                return this;
+            };
+            HttpResponse.prototype.json = function (body) {
+                this.writeHeader('Content-Type', 'application/json');
+                try {
+                    this.end(JSON.stringify(body));
+                }
+                catch (error) {
+                    throw new Error('Failed to stringify JSON', { cause: error });
+                }
+            };
+            HttpResponse.prototype.sendFile = function (filePath) {
+                (0, file_1.sendFile)(req, this, filePath);
+            };
+            HttpResponse.prototype.setCookie = function (name, value, options) {
+                (0, utils_1.setCookie)(this, name, value, options);
+            };
+        }
+        if (req.constructor._extended !== true) {
+            const HttpRequest = req.constructor;
+            HttpRequest._extended = true;
+            HttpRequest.prototype.body = function () {
+                return __awaiter(this, void 0, void 0, function* () {
+                    return (0, utils_1.parseBody)(res);
+                });
+            };
+            HttpRequest.prototype.getCookie = function (name) {
+                return (0, utils_1.getCookie)(req, res, name);
+            };
+        }
     }
     executeMiddlewares(req, res, handlers, finalHandler) {
         const next = (index) => {

@@ -4,7 +4,7 @@ import cluster from 'cluster'
 import { Router } from './router'
 import { sendFile } from './file'
 import { getCookie, parseBody, setCookie } from './utils'
-import { HttpMethod, IApp, ILogger, Middleware, Request, Response } from './types'
+import { HttpMethod, IApp, ILogger, Middleware, Request, Response, SetCookieOptions } from './types'
 
 /**
  *
@@ -95,32 +95,54 @@ export class App {
       return res
     }
 
-    res.send = (body) => res.end(body)
+    if ((res.constructor as any)._extended !== true) {
+      const HttpResponse = res.constructor as any
+      HttpResponse._extended = true
 
-    res.status = (code) => {
-      res.writeStatus(String(code))
-      return res
-    }
+      HttpResponse.prototype.send = function (body: string) {
+        return this.end(body)
+      }
 
-    res.header = (key, value) => {
-      res.writeHeader(key, value)
-      return res
-    }
+      HttpResponse.prototype.status = function (code: number) {
+        this.writeStatus(String(code))
+        return this
+      }
 
-    res.json = (body) => {
-      res.writeHeader('Content-Type', 'application/json')
-      try {
-        res.end(JSON.stringify(body))
-      } catch (error) {
-        throw new Error('Failed to stringify JSON', { cause: error })
+      HttpResponse.prototype.header = function (key: string, value: string) {
+        this.writeHeader(key, value)
+        return this
+      }
+
+      HttpResponse.prototype.json = function (body: unknown) {
+        this.writeHeader('Content-Type', 'application/json')
+        try {
+          this.end(JSON.stringify(body))
+        } catch (error) {
+          throw new Error('Failed to stringify JSON', { cause: error })
+        }
+      }
+
+      HttpResponse.prototype.sendFile = function (filePath: string) {
+        sendFile(req, this, filePath)
+      }
+
+      HttpResponse.prototype.setCookie = function (name: string, value: string, options?: SetCookieOptions) {
+        setCookie(this, name, value, options)
       }
     }
 
-    res.sendFile = (filePath) => sendFile(req, res, filePath)
-    res.setCookie = (name, value, options) => setCookie(res, name, value, options)
+    if ((req.constructor as any)._extended !== true) {
+      const HttpRequest = req.constructor as any
+      HttpRequest._extended = true
 
-    req.body = async <T>() => parseBody<T>(res)
-    req.getCookie = (name: string) => getCookie(req, res, name)
+      HttpRequest.prototype.body = async function <T>() {
+        return parseBody<T>(res)
+      }
+
+      HttpRequest.prototype.getCookie = function (name: string) {
+        return getCookie(req, res, name)
+      }
+    }
   }
 
   private executeMiddlewares(req: Request, res: Response, handlers: Middleware[], finalHandler: () => void) {
