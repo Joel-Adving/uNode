@@ -1,4 +1,4 @@
-## High performance web api framework built on uWebSockets.js
+## High performance web application framework built on uWebSockets.js
 
 ### Overview
 
