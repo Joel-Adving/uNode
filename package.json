@@ -11,7 +11,7 @@
   ],
   "author": "Joel",
   "license": "MIT",
-  "main": "dis/src/index.js",
+  "main": "dist/src/index.js",
   "type": "module",
   "scripts": {
     "build": "swc src -d dist",
