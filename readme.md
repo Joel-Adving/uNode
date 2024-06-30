@@ -36,7 +36,7 @@ Benchmarks where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04
 131820.081 requests/second
 ```
 
-#### Asp.net core
+#### ASP.NET Core
 
 ```
 123631.414 requests/second
