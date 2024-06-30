@@ -7,10 +7,10 @@
       "decorators": true
     },
     "baseUrl": "./",
-    "target": "esnext"
+    "target": "es2021"
   },
   "module": {
-    "type": "nodenext",
+    "type": "commonjs",
     "resolveFully": true
   },
   "minify": true
