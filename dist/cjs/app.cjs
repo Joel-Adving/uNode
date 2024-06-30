@@ -45,7 +45,12 @@ class App {
             res.cork(() => {
                 this.patchRequestResponse(req, res);
                 try {
-                    this.executeMiddlewares(req, res, this.middlewares, () => handler(req, res));
+                    this.executeMiddlewares(req, res, this.middlewares, () => {
+                        const result = handler(req, res);
+                        if (typeof result === 'string' && !res.done) {
+                            res.end(result);
+                        }
+                    });
                 }
                 catch (error) {
                     this.logger.error(error);

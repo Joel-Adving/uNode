@@ -20,14 +20,28 @@ npm i @oki.gg/unode
 
 ## Example
 
+Minimalistic chainable API
+
 ```ts
 import { App } from '@oki.gg/unode'
 
-new App()
-  .get('/', (req, res) => {
-    res.send('Hello, World!')
-  })
-  .listen(3000)
+new App().get('/', () => 'Hello World!').listen(3000)
+```
+
+Or more verbose traditional way
+
+```ts
+import { App } from '@oki.gg/unode'
+
+const app = new App()
+
+app.get('/', (req, res) => {
+  res.send('Hello World!')
+})
+
+app.listen(3000, () => {
+  console.log('Server is running on port 3000')
+})
 ```
 
 ### Benchmark
