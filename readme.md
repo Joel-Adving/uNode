@@ -25,7 +25,9 @@ Minimalistic chainable API
 ```ts
 import { App } from '@oki.gg/unode'
 
-new App().get('/', () => 'Hello World!').listen(3000)
+new App()
+  .get('/', () => 'Hello World!')
+  .listen(3000)
 ```
 
 Or more verbose traditional way
