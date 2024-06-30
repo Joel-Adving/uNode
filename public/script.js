@@ -1,8 +1,8 @@
 /**
  * @typedef {Object} Todo
- * @property {number} id - The unique identifier for the todo item.
- * @property {string} title - The title of the todo item.
- * @property {number} completed - The completion status of the todo item.
+ * @property {number} id
+ * @property {string} title
+ * @property {number} completed
  */
 
 /** @returns {Promise<Todo[]>} */
