@@ -1,0 +1,168 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.App = void 0;
+const uWebSockets_js_1 = __importDefault(require("uWebSockets.js"));
+const file_1 = require("./file.cjs");
+const utils_1 = require("./utils.cjs");
+/**
+ *
+ * This class provides methods for setting up HTTP routes, middleware, and WebSocket behavior.
+ *
+ * @example
+ * import { App } from '@oki.gg/unode';
+ *
+ * const app = new App();
+ *
+ * app.get('/', (req, res) => {
+ *   res.send('Hello, World!');
+ * });
+ *
+ * app.listen(3000, () => {
+ *   console.log('Server is running on port 3000');
+ * });
+ */
+class App {
+    constructor({ logger } = {}) {
+        this.middlewares = [];
+        this.app = uWebSockets_js_1.default.App();
+        this.logger = logger || console;
+    }
+    handleRequest(method, path, handler) {
+        ;
+        this.app[method].call(this.app, path, (res, req) => {
+            res.cork(() => {
+                this.patchRequestResponse(req, res);
+                try {
+                    this.executeMiddlewares(req, res, this.middlewares, () => handler(req, res));
+                }
+                catch (error) {
+                    this.logger.error(error);
+                    if (!res.done) {
+                        res.writeStatus('500 Internal Server Error').end('Internal Server Error');
+                    }
+                }
+            });
+        });
+    }
+    patchRequestResponse(req, res) {
+        req.body = () => __awaiter(this, void 0, void 0, function* () { return (0, utils_1.parseBody)(res); });
+        req.getCookie = (name) => (0, utils_1.getCookie)(req, res, name);
+        res._end = res.end;
+        res.onAborted(() => {
+            res.done = true;
+            if (res.abortEvents) {
+                res.abortEvents.forEach((f) => f());
+            }
+        });
+        res.onAborted = (handler) => {
+            res.abortEvents = res.abortEvents || [];
+            res.abortEvents.push(handler);
+            return res;
+        };
+        res.end = (body) => {
+            if (res.done) {
+                this.logger.warn('uWS DEBUG: Called end after done');
+                return res;
+            }
+            res.done = true;
+            res._end(body);
+            return res;
+        };
+        res.send = (body) => {
+            res.end(body);
+        };
+        res.status = (code) => {
+            res.writeStatus(String(code));
+            return res;
+        };
+        res.header = (key, value) => {
+            res.writeHeader(key, value);
+            return res;
+        };
+        res.json = (body) => {
+            res.writeHeader('Content-Type', 'application/json');
+            try {
+                res.end(JSON.stringify(body));
+            }
+            catch (error) {
+                throw new Error('Failed to stringify JSON', { cause: error });
+            }
+        };
+        res.sendFile = (filePath) => (0, file_1.sendFile)(req, res, filePath);
+    }
+    executeMiddlewares(req, res, handlers, finalHandler) {
+        const next = (index) => {
+            if (index < handlers.length) {
+                handlers[index](req, res, () => next(index + 1));
+            }
+            else {
+                finalHandler();
+            }
+        };
+        next(0);
+    }
+    use(handler) {
+        this.middlewares.push(handler);
+        return this;
+    }
+    get(path, handler) {
+        this.handleRequest('get', path, handler);
+        return this;
+    }
+    post(path, handler) {
+        this.handleRequest('post', path, handler);
+        return this;
+    }
+    patch(path, handler) {
+        this.handleRequest('patch', path, handler);
+        return this;
+    }
+    put(path, handler) {
+        this.handleRequest('put', path, handler);
+        return this;
+    }
+    delete(path, handler) {
+        this.handleRequest('del', path, handler);
+        return this;
+    }
+    options(path, handler) {
+        this.handleRequest('options', path, handler);
+    }
+    websocket(pattern, behavior) {
+        this.app.ws(pattern, behavior);
+    }
+    group(path, router) {
+        router.routes.forEach((route) => {
+            this.handleRequest(route.method, path + route.path, (req, res) => {
+                this.executeMiddlewares(req, res, router.middlewares, () => route.handler(req, res, () => { }));
+            });
+        });
+        return this;
+    }
+    listen(port, cb) {
+        this.app.listen(port, (token) => {
+            if (token) {
+                cb(token);
+            }
+            else {
+                throw new Error('Failed to listen to port');
+            }
+        });
+    }
+    close() {
+        this.app.close();
+    }
+}
+exports.App = App;

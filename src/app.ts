@@ -1,8 +1,26 @@
 import uWS, { us_listen_socket } from 'uWebSockets.js'
-import { sendFile } from './utils/file'
+import { sendFile } from './file'
 import { HttpMethod, IApp, ILogger, Middleware, Request, Response } from './types'
-import { getCookie, parseBody } from './utils/uws-utils'
+import { getCookie, parseBody } from './utils'
+import { Router } from './router'
 
+/**
+ *
+ * This class provides methods for setting up HTTP routes, middleware, and WebSocket behavior.
+ *
+ * @example
+ * import { App } from '@oki.gg/unode';
+ *
+ * const app = new App();
+ *
+ * app.get('/', (req, res) => {
+ *   res.send('Hello, World!');
+ * });
+ *
+ * app.listen(3000, () => {
+ *   console.log('Server is running on port 3000');
+ * });
+ */
 export class App {
   app: IApp
   logger: ILogger
@@ -158,44 +176,5 @@ export class App {
 
   close() {
     this.app.close()
-  }
-}
-
-export class Router {
-  routes: { method: string; path: string; handler: Middleware }[] = []
-  middlewares: Middleware[] = []
-
-  private addRoute(method: string, path: string, handler: Middleware) {
-    this.routes.push({ method, path, handler })
-  }
-
-  use(handler: Middleware) {
-    this.middlewares.push(handler)
-    return this
-  }
-
-  get(path: string, handler: Middleware) {
-    this.addRoute('get', path, handler)
-    return this
-  }
-
-  post(path: string, handler: Middleware) {
-    this.addRoute('post', path, handler)
-    return this
-  }
-
-  patch(path: string, handler: Middleware) {
-    this.addRoute('patch', path, handler)
-    return this
-  }
-
-  put(path: string, handler: Middleware) {
-    this.addRoute('put', path, handler)
-    return this
-  }
-
-  delete(path: string, handler: Middleware) {
-    this.addRoute('del', path, handler)
-    return this
   }
 }
