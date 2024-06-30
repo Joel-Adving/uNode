@@ -28,7 +28,7 @@ All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04,
 72475.875 requests/second
 ```
 
-## Comparisons with other popular frameworks
+## Comparison with other relevant frameworks
 
 #### Go net/http
 
@@ -36,7 +36,7 @@ All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04,
 131820.081 requests/second
 ```
 
-#### ASP.NET Core
+#### ASP.NET Core minimal API
 
 ```
 123631.414 requests/second
