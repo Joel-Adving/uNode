@@ -20,7 +20,7 @@ npm i "@oki.gg/unode"
 
 ## Examples
 
-Minimalistic chainable API
+#### Minimalistic chainable API
 
 ```ts
 import { App } from '@oki.gg/unode'
@@ -30,7 +30,7 @@ new App()
   .listen(3000)
 ```
 
-Or more verbose traditional way
+#### Or more verbose traditional way
 
 ```ts
 const app = new App()
@@ -39,9 +39,9 @@ app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
-app.listen(3000, () => {
+app.listen(3000, () =>
   console.log('Server is running on port 3000')
-})
+)
 ```
 
 #### Route groups
@@ -77,7 +77,7 @@ app.listen(3000, () => {
 })
 ```
 
-### Benchmark
+## Benchmark
 
 All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04, AMD Ryzen 5 5600X 3,7GHz 6-core 12-thread CPU, 32GB RAM
 
@@ -164,9 +164,5 @@ All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04,
 ```
 
 9322.392 requests/second
-
-```
-
-```
 
 ```
