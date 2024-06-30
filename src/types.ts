@@ -6,6 +6,8 @@ export type HttpMethod = 'get' | 'post' | 'patch' | 'put' | 'del' | 'options'
 export interface ILogger {
   log: (message: unknown) => void
   error: (message: unknown) => void
+  warn: (message: unknown) => void
+  info: (message: unknown) => void
 }
 
 export interface Request extends HttpRequest {

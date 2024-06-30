@@ -19,12 +19,11 @@ export class App {
       path,
       (res, req) => {
         res.cork(() => {
-          this.patchRequest(req, res)
-          this.patchResponse(req, res)
+          this.patchRequestResponse(req, res)
           try {
             this.executeMiddlewares(req, res, this.middlewares, () => handler(req, res))
           } catch (error) {
-            this.logger.log(error)
+            this.logger.error(error)
             if (!res.done) {
               res.writeStatus('500 Internal Server Error').end('Internal Server Error')
             }
@@ -34,12 +33,11 @@ export class App {
     )
   }
 
-  private patchRequest(req: Request, res: Response) {
+  private patchRequestResponse(req: Request, res: Response) {
     req.body = async <T>() => parseBody<T>(res)
-    req.getCookie = (name: string) => getCookie(req, res, name)
-  }
 
-  private patchResponse(req: Request, res: Response) {
+    req.getCookie = (name: string) => getCookie(req, res, name)
+
     res._end = res.end
 
     res.onAborted(() => {
@@ -57,22 +55,16 @@ export class App {
 
     res.end = (body) => {
       if (res.done) {
-        console.log(`uWS DEBUG: Called end after done`)
+        this.logger.warn('uWS DEBUG: Called end after done')
         return res
       }
       res.done = true
       res._end(body)
-
       return res
     }
 
     res.send = (body) => {
       res.end(body)
-    }
-
-    res.json = (body) => {
-      res.writeHeader('Content-Type', 'application/json')
-      res.end(JSON.stringify(body))
     }
 
     res.status = (code) => {
@@ -83,6 +75,15 @@ export class App {
     res.header = (key, value) => {
       res.writeHeader(key, value)
       return res
+    }
+
+    res.json = (body) => {
+      res.writeHeader('Content-Type', 'application/json')
+      try {
+        res.end(JSON.stringify(body))
+      } catch (error) {
+        throw new Error('Failed to stringify JSON', { cause: error })
+      }
     }
 
     res.sendFile = (filePath) => sendFile(req, res, filePath)
