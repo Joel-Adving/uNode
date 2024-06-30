@@ -16,17 +16,14 @@ const fs_1 = require("fs");
  * @example
  * ```typescript
  * import path from 'path';
- * import { App } from '@oki.gg/unode';
- * import { serveStatic } from './path/to/your/module.cjs';
+ * import { App, serveStatic } from '@oki.gg/unode';
  *
  * const app = new App()
  * const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '.');
  *
  * app.get('/*', serveStatic(path.resolve(rootDir, 'public')));
  *
- * app.listen(3000, () => {
- *   console.log('Server is running on port 3000');
- * });
+ * app.listen(3000);
  * ```
  */
 function serveStatic(dir) {

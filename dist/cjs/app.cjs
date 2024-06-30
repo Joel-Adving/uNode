@@ -32,7 +32,7 @@ const file_1 = require("./file.cjs");
 const utils_1 = require("./utils.cjs");
 /**
  *
- * This class provides methods for setting up HTTP routes, middleware, and WebSocket behavior.
+ * Main uNode class that provides methods for setting up HTTP routes, middleware, and WebSocket behavior.
  *
  * @example
  * import { App } from '@oki.gg/unode'
@@ -82,8 +82,6 @@ class App {
         });
     }
     patchRequestResponse(req, res) {
-        req.body = () => __awaiter(this, void 0, void 0, function* () { return (0, utils_1.parseBody)(res); });
-        req.getCookie = (name) => (0, utils_1.getCookie)(req, res, name);
         res._end = res.end;
         res.onAborted(() => {
             res.done = true;
@@ -105,9 +103,7 @@ class App {
             res._end(body);
             return res;
         };
-        res.send = (body) => {
-            res.end(body);
-        };
+        res.send = (body) => res.end(body);
         res.status = (code) => {
             res.writeStatus(String(code));
             return res;
@@ -126,6 +122,9 @@ class App {
             }
         };
         res.sendFile = (filePath) => (0, file_1.sendFile)(req, res, filePath);
+        res.setCookie = (name, value, options) => (0, utils_1.setCookie)(res, name, value, options);
+        req.body = () => __awaiter(this, void 0, void 0, function* () { return (0, utils_1.parseBody)(res); });
+        req.getCookie = (name) => (0, utils_1.getCookie)(req, res, name);
     }
     executeMiddlewares(req, res, handlers, finalHandler) {
         const next = (index) => {

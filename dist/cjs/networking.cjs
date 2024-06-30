@@ -9,9 +9,6 @@ exports.getIpAddress = getIpAddress;
  *
  * @example
  * ```typescript
- * import { App } from '@oki.gg/unode';
- * import { getIpAddress } from './path/to/your/module.cjs';
- *
  * const app = new App();
  *
  * app.get('/ip', (req, res) => {
@@ -19,9 +16,7 @@ exports.getIpAddress = getIpAddress;
  *   res.end(`Your IP address is: ${ipAddress}`);
  * });
  *
- * app.listen(3000, () => {
- *   console.log('Server is running on port 3000');
- * });
+ * app.listen(3000);
  * ```
  */
 function getIpAddress(req, res) {

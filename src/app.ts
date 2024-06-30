@@ -3,7 +3,7 @@ import { cpus } from 'os'
 import cluster from 'cluster'
 import { Router } from './router'
 import { sendFile } from './file'
-import { getCookie, parseBody } from './utils'
+import { getCookie, parseBody, setCookie } from './utils'
 import { HttpMethod, IApp, ILogger, Middleware, Request, Response } from './types'
 
 /**
@@ -70,9 +70,6 @@ export class App {
   }
 
   private patchRequestResponse(req: Request, res: Response) {
-    req.body = async <T>() => parseBody<T>(res)
-    req.getCookie = (name: string) => getCookie(req, res, name)
-
     res._end = res.end
 
     res.onAborted(() => {
@@ -98,9 +95,7 @@ export class App {
       return res
     }
 
-    res.send = (body) => {
-      res.end(body)
-    }
+    res.send = (body) => res.end(body)
 
     res.status = (code) => {
       res.writeStatus(String(code))
@@ -122,6 +117,10 @@ export class App {
     }
 
     res.sendFile = (filePath) => sendFile(req, res, filePath)
+    res.setCookie = (name, value, options) => setCookie(res, name, value, options)
+
+    req.body = async <T>() => parseBody<T>(res)
+    req.getCookie = (name: string) => getCookie(req, res, name)
   }
 
   private executeMiddlewares(req: Request, res: Response, handlers: Middleware[], finalHandler: () => void) {

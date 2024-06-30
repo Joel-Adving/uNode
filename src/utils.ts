@@ -1,4 +1,4 @@
-import { HttpRequest, HttpResponse } from 'uWebSockets.js'
+import { Response, Request, SetCookieOptions } from './types'
 
 /**
  * Parse the JSON body of the request.
@@ -9,12 +9,6 @@ import { HttpRequest, HttpResponse } from 'uWebSockets.js'
  * Can be used as a standalone function or added as a method on the `req` object.
  *
  * @example
- * // Using parseBody as a standalone function
- * import { App } from '@oki.gg/unode';
- * import { parseBody } from './path/to/your/module';
- *
- * const app = new App();
- *
  * app.post('/data', async (req, res) => {
  *   try {
  *     const body = await parseBody<{ key: string }>(res);
@@ -25,7 +19,6 @@ import { HttpRequest, HttpResponse } from 'uWebSockets.js'
  * });
  *
  * // Alternatively, you can use the `req` object to access the `parseBody` method
- *
  * app.post('/other-data', async (req, res) => {
  *   try {
  *     const body = await req.parseBody<{ key: string }>();
@@ -34,12 +27,8 @@ import { HttpRequest, HttpResponse } from 'uWebSockets.js'
  *     res.status(400).send(error.message);
  *   }
  * });
- *
- * app.listen(3000, () => {
- *   console.log('Server is running on port 3000');
- * });
  */
-export function parseBody<T>(res: HttpResponse): Promise<T> {
+export function parseBody<T>(res: Response): Promise<T> {
   return new Promise((resolve, reject) => {
     let buffer: Buffer
 
@@ -73,29 +62,18 @@ export function parseBody<T>(res: HttpResponse): Promise<T> {
 
  * @example
  * // Using getCookie as a standalone function
- * import { App } from '@oki.gg/unode';
- * import { getCookie } from './path/to/your/module';
- *
- * const app = new App();
- *
  * app.get('/cookie', (req, res) => {
  *   const cookieValue = getCookie(req, res, 'cookieName');
  *   res.send(`Cookie Value: ${cookieValue}`);
  * });
  * 
  * // Alternatively, you can use the `req` object to access the `getCookie` method
- * 
  * app.get('/cookie', (req, res) => {
  *   const cookieValue = req.getCookie('cookieName');
  *   res.send(`Cookie Value: ${cookieValue}`);
  * });
- *
- * app.listen(3000, () => {
- *   console.log('Server is running on port 3000');
- * });
-
  */
-export function getCookie(req: HttpRequest, res: HttpResponse, name: string): string {
+export function getCookie(req: Request, res: Response, name: string): string {
   res.cookies ??= req.getHeader('cookie')
   return (
     res.cookies &&
@@ -104,4 +82,36 @@ export function getCookie(req: HttpRequest, res: HttpResponse, name: string): st
       (getCookie[name] ??= new RegExp(`(^|;)\\s*${name}\\s*=\\s*([^;]+)`))
     )?.[2]
   )
+}
+
+export function setCookie(res: Response, name: string, value: string, options: SetCookieOptions = {}) {
+  const { maxAge, path = '/', domain, isSecure = false, isHttpOnly = true, sameSite = 'Lax' } = options
+
+  let cookie = `${name}=${value}`
+
+  if (maxAge) {
+    cookie += `; Max-Age=${maxAge}`
+  }
+
+  if (path) {
+    cookie += `; Path=${path}`
+  }
+
+  if (domain) {
+    cookie += `; Domain=${domain}`
+  }
+
+  if (isSecure) {
+    cookie += '; Secure'
+  }
+
+  if (isHttpOnly) {
+    cookie += '; HttpOnly'
+  }
+
+  if (sameSite) {
+    cookie += `; SameSite=${sameSite}`
+  }
+
+  res.writeHeader('Set-Cookie', cookie)
 }

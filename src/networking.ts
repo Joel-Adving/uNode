@@ -8,9 +8,6 @@ import { Request, Response } from './types'
  *
  * @example
  * ```typescript
- * import { App } from '@oki.gg/unode';
- * import { getIpAddress } from './path/to/your/module';
- *
  * const app = new App();
  *
  * app.get('/ip', (req, res) => {
@@ -18,9 +15,7 @@ import { Request, Response } from './types'
  *   res.end(`Your IP address is: ${ipAddress}`);
  * });
  *
- * app.listen(3000, () => {
- *   console.log('Server is running on port 3000');
- * });
+ * app.listen(3000);
  * ```
  */
 export function getIpAddress(req: Request, res: Response) {

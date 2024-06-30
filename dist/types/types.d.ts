@@ -1,6 +1,14 @@
 import { HttpRequest, HttpResponse, TemplatedApp } from 'uWebSockets.js';
 export type Middleware = (req: Request, res: Response, next: () => void) => void;
 export type HttpMethod = 'get' | 'post' | 'patch' | 'put' | 'del' | 'options';
+export type SetCookieOptions = {
+    maxAge?: number;
+    path?: string;
+    domain?: string;
+    isSecure?: boolean;
+    isHttpOnly?: boolean;
+    sameSite?: 'Lax' | 'Strict' | 'None';
+};
 export interface ILogger {
     log: (message: unknown) => void;
     error: (message: unknown) => void;
@@ -19,6 +27,7 @@ export interface Response extends HttpResponse {
     status: (code: number) => Response;
     header: (key: string, value: string) => Response;
     sendFile: (filePath: string) => void;
+    setCookie: (name: string, value: string, options?: SetCookieOptions) => void;
 }
 export interface IApp extends TemplatedApp {
     get: (path: string, handler: (res: Response, req: Request) => void) => TemplatedApp;

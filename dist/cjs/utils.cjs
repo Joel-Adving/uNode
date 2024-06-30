@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.parseBody = parseBody;
 exports.getCookie = getCookie;
+exports.setCookie = setCookie;
 /**
  * Parse the JSON body of the request.
  *
@@ -11,12 +12,6 @@ exports.getCookie = getCookie;
  * Can be used as a standalone function or added as a method on the `req` object.
  *
  * @example
- * // Using parseBody as a standalone function
- * import { App } from '@oki.gg/unode';
- * import { parseBody } from './path/to/your/module.cjs';
- *
- * const app = new App();
- *
  * app.post('/data', async (req, res) => {
  *   try {
  *     const body = await parseBody<{ key: string }>(res);
@@ -27,7 +22,6 @@ exports.getCookie = getCookie;
  * });
  *
  * // Alternatively, you can use the `req` object to access the `parseBody` method
- *
  * app.post('/other-data', async (req, res) => {
  *   try {
  *     const body = await req.parseBody<{ key: string }>();
@@ -35,10 +29,6 @@ exports.getCookie = getCookie;
  *   } catch (error) {
  *     res.status(400).send(error.message);
  *   }
- * });
- *
- * app.listen(3000, () => {
- *   console.log('Server is running on port 3000');
  * });
  */
 function parseBody(res) {
@@ -70,27 +60,16 @@ function parseBody(res) {
 
  * @example
  * // Using getCookie as a standalone function
- * import { App } from '@oki.gg/unode';
- * import { getCookie } from './path/to/your/module.cjs';
- *
- * const app = new App();
- *
  * app.get('/cookie', (req, res) => {
  *   const cookieValue = getCookie(req, res, 'cookieName');
  *   res.send(`Cookie Value: ${cookieValue}`);
  * });
  *
  * // Alternatively, you can use the `req` object to access the `getCookie` method
- *
  * app.get('/cookie', (req, res) => {
  *   const cookieValue = req.getCookie('cookieName');
  *   res.send(`Cookie Value: ${cookieValue}`);
  * });
- *
- * app.listen(3000, () => {
- *   console.log('Server is running on port 3000');
- * });
-
  */
 function getCookie(req, res, name) {
     var _a, _b, _c;
@@ -99,4 +78,27 @@ function getCookie(req, res, name) {
         ((_c = res.cookies.match(
         // @ts-ignore
         ((_b = getCookie[name]) !== null && _b !== void 0 ? _b : (getCookie[name] = new RegExp(`(^|;)\\s*${name}\\s*=\\s*([^;]+)`))))) === null || _c === void 0 ? void 0 : _c[2]));
+}
+function setCookie(res, name, value, options = {}) {
+    const { maxAge, path = '/', domain, isSecure = false, isHttpOnly = true, sameSite = 'Lax' } = options;
+    let cookie = `${name}=${value}`;
+    if (maxAge) {
+        cookie += `; Max-Age=${maxAge}`;
+    }
+    if (path) {
+        cookie += `; Path=${path}`;
+    }
+    if (domain) {
+        cookie += `; Domain=${domain}`;
+    }
+    if (isSecure) {
+        cookie += '; Secure';
+    }
+    if (isHttpOnly) {
+        cookie += '; HttpOnly';
+    }
+    if (sameSite) {
+        cookie += `; SameSite=${sameSite}`;
+    }
+    res.writeHeader('Set-Cookie', cookie);
 }

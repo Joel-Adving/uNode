@@ -23,10 +23,10 @@ import uWS from 'uWebSockets.js';
 import { cpus } from 'os';
 import cluster from 'cluster';
 import { sendFile } from './file.mjs';
-import { getCookie, parseBody } from './utils.mjs';
+import { getCookie, parseBody, setCookie } from './utils.mjs';
 /**
  *
- * This class provides methods for setting up HTTP routes, middleware, and WebSocket behavior.
+ * Main uNode class that provides methods for setting up HTTP routes, middleware, and WebSocket behavior.
  *
  * @example
  * import { App } from '@oki.gg/unode'
@@ -76,8 +76,6 @@ export class App {
         });
     }
     patchRequestResponse(req, res) {
-        req.body = () => __awaiter(this, void 0, void 0, function* () { return parseBody(res); });
-        req.getCookie = (name) => getCookie(req, res, name);
         res._end = res.end;
         res.onAborted(() => {
             res.done = true;
@@ -99,9 +97,7 @@ export class App {
             res._end(body);
             return res;
         };
-        res.send = (body) => {
-            res.end(body);
-        };
+        res.send = (body) => res.end(body);
         res.status = (code) => {
             res.writeStatus(String(code));
             return res;
@@ -120,6 +116,9 @@ export class App {
             }
         };
         res.sendFile = (filePath) => sendFile(req, res, filePath);
+        res.setCookie = (name, value, options) => setCookie(res, name, value, options);
+        req.body = () => __awaiter(this, void 0, void 0, function* () { return parseBody(res); });
+        req.getCookie = (name) => getCookie(req, res, name);
     }
     executeMiddlewares(req, res, handlers, finalHandler) {
         const next = (index) => {

@@ -2,22 +2,15 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Router = void 0;
 /**
- * Router class for defining and handling routes and middleware.
+ * Router class for defining and handling group routes.
  *
  * This class allows you to define routes and middleware for various HTTP methods.
  * It provides methods to add routes for GET, POST, PATCH, PUT, and DELETE requests.
  *
  * @example
- * // Creating and using a router
- * import { Router } from './path/to/your/module.cjs';
- * import { App } from '@oki.gg/unode';
+ * import { App, Router } from '@oki.gg/unode';
  *
- * const app = new App()
- * const groupRoute = new Router()
- *
- * app.group('/api', groupRoute)
- *
- * const groupRoute
+ * const apiv2 = new Router()
  *   .get('', (req, res) => {
  *     res.send('Hello, World!')
  *   })
@@ -29,6 +22,10 @@ exports.Router = void 0;
  *     const body = await req.parseBody()
  *     res.json(body)
  *   })
+ *
+ * const app = new App()
+ *
+ * app.group('/api/v2', apiv2)
  *
  * app.listen(3000, () => {
  *   console.log('Server is running on port 3000');

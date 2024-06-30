@@ -3,7 +3,7 @@ import { Router } from './router';
 import { IApp, ILogger, Middleware, Request, Response } from './types';
 /**
  *
- * This class provides methods for setting up HTTP routes, middleware, and WebSocket behavior.
+ * Main uNode class that provides methods for setting up HTTP routes, middleware, and WebSocket behavior.
  *
  * @example
  * import { App } from '@oki.gg/unode'

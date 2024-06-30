@@ -49,6 +49,15 @@ app.listen(3000, () => {
 const app = new App({ threads: 4 }) // defaults to 1 thread if not specified
 ```
 
+#### Request body parsing and JSON response
+
+```ts
+app.post('/', async (req, res) => {
+  const body = await req.body()
+  res.json(body)
+})	
+```
+
 #### Route groups
 
 ```ts
@@ -80,10 +89,27 @@ app.get('/file', (req, res) => {
 })
 ```
 
-#### Serve files from a directory
+#### Static file serving from a directory
 
 ```ts
 app.get('/*', serveStatic('path/to/directory'))
+```
+
+#### Cookies
+
+```ts
+app.get('/', (req, res) => {
+  // Get cookie
+  const cookie = req.getCookie('name')
+  // Set cookie
+  res.setCookie('name', 'value', {
+    maxAge: 3600,
+    secure: true,
+    httpOnly: true,
+    sameSite: 'strict'
+  })
+  res.send(cookie)
+})
 ```
 
 ## Performance Benchmark
