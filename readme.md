@@ -123,7 +123,3 @@ All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04,
 9322.392 requests/second
 
 ```
-
-```
-
-```
