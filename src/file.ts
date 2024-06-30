@@ -161,7 +161,7 @@ export function streamFile(res: HttpResponse, fileStats: ReturnType<typeof getFi
  * });
  * ```
  */
-export function sendFile(headers: Record<string, string>, res: HttpResponse, filePath: string) {
+export function sendFile(ifModifiedSince: string, res: HttpResponse, filePath: string) {
   const fileStats = getFileStats(filePath)
 
   if (!fileStats) {
@@ -169,7 +169,6 @@ export function sendFile(headers: Record<string, string>, res: HttpResponse, fil
   }
 
   const { contentType, lastModified } = fileStats
-  const ifModifiedSince = headers['if-modified-since']
 
   if (ifModifiedSince === lastModified) {
     return res.writeStatus('304').end()

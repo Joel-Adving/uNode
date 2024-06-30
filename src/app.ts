@@ -77,11 +77,6 @@ export class App {
   private patchRequestResponse(req: Request, res: Response, paramKeys: string[]) {
     res._end = res.end
 
-    const headers: Record<string, string> = {}
-    req.forEach((name, value) => {
-      headers[name] = value
-    })
-
     res.onAborted(() => {
       res.done = true
       if (res.abortEvents) {
@@ -126,8 +121,10 @@ export class App {
       }
     }
 
+    const ifModifiedSince = req.getHeader('if-modified-since')
+
     res.sendFile = (filePath) => {
-      sendFile(headers, res, filePath)
+      sendFile(ifModifiedSince, res, filePath)
     }
 
     res.setCookie = (name, value, options) => {
