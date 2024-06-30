@@ -25,7 +25,7 @@ All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04,
 ### Result
 
 ```
-72475.875 requests/second
+74662.875 requests/second
 ```
 
 ## Comparison with other relevant frameworks
@@ -45,13 +45,13 @@ All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04,
 #### uWebSockets.js
 
 ```
-73420.095 requests/second
+76586.927 requests/second
 ```
 
 #### This project
 
 ```
-72475.875 requests/second
+74662.609 requests/second
 ```
 
 #### hyper-express
@@ -72,14 +72,14 @@ All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04,
 63300.917 requests/second
 ```
 
-#### Node.js
+#### Node.js http
 
 ```
-27345.801 requests/second
+32322.931 requests/second
 ```
 
 #### Express.js
 
 ```
-8912.592 requests/second
+9322.392 requests/second
 ```

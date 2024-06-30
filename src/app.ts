@@ -18,16 +18,18 @@ export class App {
       this.app,
       path,
       (res, req) => {
-        this.patchRequest(req, res)
-        this.patchResponse(req, res)
-        try {
-          this.executeMiddlewares(req, res, this.middlewares, () => handler(req, res))
-        } catch (error) {
-          this.logger.log(error)
-          if (!res.done) {
-            res.writeStatus('500 Internal Server Error').end('Internal Server Error')
+        res.cork(() => {
+          this.patchRequest(req, res)
+          this.patchResponse(req, res)
+          try {
+            this.executeMiddlewares(req, res, this.middlewares, () => handler(req, res))
+          } catch (error) {
+            this.logger.log(error)
+            if (!res.done) {
+              res.writeStatus('500 Internal Server Error').end('Internal Server Error')
+            }
           }
-        }
+        })
       }
     )
   }
@@ -59,9 +61,8 @@ export class App {
         return res
       }
       res.done = true
-      res.cork(() => {
-        res._end(body)
-      })
+      res._end(body)
+
       return res
     }
 
