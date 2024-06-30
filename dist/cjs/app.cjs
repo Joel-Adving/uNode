@@ -8,12 +8,26 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
+    if (kind === "m") throw new TypeError("Private method is not writable");
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
+};
+var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
+    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
+var _App_threads;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.App = void 0;
 const uWebSockets_js_1 = __importDefault(require("uWebSockets.js"));
+const os_1 = require("os");
+const cluster_1 = __importDefault(require("cluster"));
 const file_1 = require("./file.cjs");
 const utils_1 = require("./utils.cjs");
 /**
@@ -34,30 +48,38 @@ const utils_1 = require("./utils.cjs");
  * });
  */
 class App {
-    constructor({ logger } = {}) {
+    constructor({ logger, threads } = {}) {
         this.middlewares = [];
+        _App_threads.set(this, void 0);
         this.app = uWebSockets_js_1.default.App();
         this.logger = logger || console;
+        __classPrivateFieldSet(this, _App_threads, threads || 1, "f");
+        if (Number(threads) > (0, os_1.cpus)().length) {
+            throw new Error(`Threads count cannot be higher than the number of current CPU threads. Max allowed number of threads: ${(0, os_1.cpus)().length}`);
+        }
     }
     handleRequest(method, path, handler) {
         ;
         this.app[method].call(this.app, path, (res, req) => {
+            // Cork the entire handler to greatly improve performance when writing to the response many times
             res.cork(() => {
+                // Add custom properties and methods to the request and response objects
                 this.patchRequestResponse(req, res);
                 try {
+                    // Execute middlewares before the route handler
                     this.executeMiddlewares(req, res, this.middlewares, () => {
                         const result = handler(req, res);
+                        // If the route handler returns a string and the response is not done, end the response
                         if (typeof result === 'string' && !res.done) {
                             res.end(result);
                         }
                     });
                 }
                 catch (error) {
+                    // Global error handler
                     this.logger.error(error);
                     if (!res.done) {
-                        res
-                            .writeStatus('500 Internal Server Error')
-                            .end('Internal Server Error');
+                        res.writeStatus('500 Internal Server Error').end('Internal Server Error');
                     }
                 }
             });
@@ -120,6 +142,19 @@ class App {
         };
         next(0);
     }
+    group(path, router) {
+        router.routes.forEach((route) => {
+            this.handleRequest(route.method, path + route.path, (req, res) => {
+                this.executeMiddlewares(req, res, router.middlewares, () => {
+                    const result = route.handler(req, res, () => { });
+                    if (typeof result === 'string' && !res.done) {
+                        res.end(result);
+                    }
+                });
+            });
+        });
+        return this;
+    }
     use(handler) {
         this.middlewares.push(handler);
         return this;
@@ -150,36 +185,50 @@ class App {
     websocket(pattern, behavior) {
         this.app.ws(pattern, behavior);
     }
-    group(path, router) {
-        router.routes.forEach((route) => {
-            this.handleRequest(route.method, path + route.path, (req, res) => {
-                this.executeMiddlewares(req, res, router.middlewares, () => {
-                    const result = route.handler(req, res, () => { });
-                    if (typeof result === 'string' && !res.done) {
-                        res.send(result);
-                    }
-                });
-            });
-        });
-        return this;
-    }
     listen(port, cb) {
-        this.app.listen(port, (token) => {
-            if (token) {
-                if (cb) {
-                    cb(token);
-                }
-                else {
-                    this.logger.log(`Server is running on port ${port}`);
-                }
+        if (__classPrivateFieldGet(this, _App_threads, "f") > 1 && cluster_1.default.isPrimary) {
+            console.log(`Master ${process.pid} is running`);
+            for (let i = 0; i < __classPrivateFieldGet(this, _App_threads, "f"); i++) {
+                cluster_1.default.fork();
             }
-            else {
-                throw new Error('Failed to listen to port');
+            cluster_1.default.on('exit', (worker, code, signal) => {
+                console.log(`Process  ${worker.process.pid} died`);
+                if (!worker.exitedAfterDisconnect) {
+                    console.log('Starting a new process');
+                    cluster_1.default.fork();
+                }
+            });
+            const shutdown = () => {
+                console.log('Master is shutting down');
+                for (const id in cluster_1.default.workers) {
+                    console.log(`Killing process ${id}`);
+                    cluster_1.default === null || cluster_1.default === void 0 ? void 0 : cluster_1.default.workers[id].kill('SIGTERM');
+                }
+                process.exit(0);
+            };
+            process.on('SIGTERM', shutdown);
+            process.on('SIGINT', shutdown);
+        }
+        else {
+            if (__classPrivateFieldGet(this, _App_threads, "f") > 1) {
+                console.log(`Process ${process.pid} started`);
+                process.on('SIGTERM', () => {
+                    console.log(`Process ${process.pid} shutting down`);
+                    this.app.close();
+                    process.exit(0);
+                });
             }
-        });
+            this.app.listen(port, (listenSocket) => {
+                if (!listenSocket) {
+                    throw new Error('Failed to listen to port');
+                }
+                cb ? cb(listenSocket) : this.logger.log(`Server is running on port ${port}`);
+            });
+        }
     }
     close() {
         this.app.close();
     }
 }
 exports.App = App;
+_App_threads = new WeakMap();

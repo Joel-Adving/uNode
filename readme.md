@@ -5,6 +5,7 @@ uNode is a high-performance Node.js framework built on top of uWebSockets.js, pr
 ## Features
 
 - Blazing fast performance with uWebSockets.js
+- built in multi-threading support
 - Simple and intuitive API
 - Route groups
 - Middleware support
@@ -25,59 +26,66 @@ npm i "@oki.gg/unode"
 ```ts
 import { App } from '@oki.gg/unode'
 
-new App()
-  .get('/', () => 'Hello World!')
-  .listen(3000)
+new App().get('/', () => 'Hello World!').listen(3000)
 ```
 
 #### Or more verbose traditional way
 
 ```ts
+import { App } from '@oki.gg/unode'
+
 const app = new App()
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
 })
 
-app.listen(3000, () =>
-  console.log('Server is running on port 3000')
-)
+app.listen(3000, () => console.log('Server is running on port 3000'))
+```
+
+#### Multi-threaded server
+
+```ts
+const app = new App({ threads: 4 }) // defaults to 1 thread if not specified
 ```
 
 #### Route groups
 
 ```ts
-const app = new App()
-
 const group = new Router()
   .get('', () => 'Get all')
   .post('', () => 'Created')
   .get('/:id', () => 'Get by id')
   .delete('/:id', () => 'Deleted')
 
-app
-  .group('/api', group)
-  .listen(3000, () =>
-    console.log('Server running on port 3000')
-  )
+app.group('/api', group).listen(3000, () => console.log('Server running on port 3000'))
 ```
 
 #### Middleware
 
 ```ts
-const app = new App()
-
 app.use((req, res, next) => {
   console.log('Middleware')
   next()
 })
+```
 
-app.listen(3000, () => {
-  console.log('Server is running on port 3000')
+#### File serving
+
+```ts
+app.get('/file', (req, res) => {
+  res.sendFile('path/to/file')
 })
 ```
 
-## Benchmark
+#### Serve public folder with static files
+
+```ts
+const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '.')
+app.get('/*', serveStatic(path.resolve(rootDir, 'public')))
+```
+
+## Performance Benchmark
 
 All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04, AMD Ryzen 5 5600X 3,7GHz 6-core 12-thread CPU, 32GB RAM
 
@@ -89,11 +97,20 @@ All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04,
 
 ```
 
-74662.875 requests/second
+160091.185 requests/second (multi-threaded, 4 threads)
+74662.875 requests/second (single-threaded)
 
 ```
 
 ## Comparison with other relevant frameworks
+
+#### uNode (multi-threaded, 4 threads) (uWebSockets.js)
+
+```
+
+160091.185 requests/second
+
+```
 
 #### Go net/http
 
@@ -119,7 +136,7 @@ All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04,
 
 ```
 
-#### uNode (This project (uWebSockets.js))
+#### uNode (single-threaded) (uWebSockets.js)
 
 ```
 
@@ -135,7 +152,7 @@ All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04,
 
 ```
 
-#### Bun - (buns http server is also built on uWebSockets.js)
+#### Bun (Buns http server is also built on uWebSockets.js)
 
 ```
 

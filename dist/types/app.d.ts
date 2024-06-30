@@ -1,6 +1,6 @@
 import uWS, { us_listen_socket } from 'uWebSockets.js';
-import { IApp, ILogger, Middleware, Request, Response } from './types';
 import { Router } from './router';
+import { IApp, ILogger, Middleware, Request, Response } from './types';
 /**
  *
  * This class provides methods for setting up HTTP routes, middleware, and WebSocket behavior.
@@ -19,15 +19,19 @@ import { Router } from './router';
  * });
  */
 export declare class App {
+    #private;
     app: IApp;
     logger: ILogger;
     middlewares: Middleware[];
-    constructor({ logger }?: {
+    constructor({ logger, threads }?: {
         logger?: ILogger;
+        multithreaded?: boolean;
+        threads?: number;
     });
     private handleRequest;
     private patchRequestResponse;
     private executeMiddlewares;
+    group(path: string, router: Router): this;
     use(handler: Middleware): this;
     get(path: string, handler: (req: Request, res: Response) => void): this;
     post(path: string, handler: (req: Request, res: Response) => void): this;
@@ -36,7 +40,6 @@ export declare class App {
     delete(path: string, handler: (req: Request, res: Response) => void): this;
     options(path: string, handler: (req: Request, res: Response) => void): void;
     websocket(pattern: uWS.RecognizedString, behavior: uWS.WebSocketBehavior<unknown>): void;
-    group(path: string, router: Router): this;
     listen(port: number, cb?: (listenSocket: us_listen_socket) => void): void;
     close(): void;
 }
