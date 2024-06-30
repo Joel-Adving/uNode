@@ -1,6 +1,6 @@
 {
   "name": "@oki.gg/unode",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "A high-performance Node.js framework built on uWebSockets.js for fast and efficient web servers.",
   "keywords": [
     "node",
