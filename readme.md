@@ -23,7 +23,7 @@ npm i @oki.gg/unode
 ## Example
 
 ```ts
-const { App } = require('@oki.gg/unode')
+import { App } from '@oki.gg/unode'
 
 new App()
   .get('/', (req, res) => {
