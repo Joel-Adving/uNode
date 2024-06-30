@@ -14,8 +14,6 @@ uNode is a high-performance Node.js framework built on top of uWebSockets.js, pr
 
 ## Installation
 
-To install `uNode`, use your prefered package manager
-
 ```bash
 npm i @oki.gg/unode
 ```
