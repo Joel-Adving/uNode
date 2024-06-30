@@ -48,19 +48,19 @@ All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04,
 76586.927 requests/second
 ```
 
-#### This project
+#### This project (uWebSockets.js)
 
 ```
 74662.609 requests/second
 ```
 
-#### hyper-express
+#### hyper-express (uWebSockets.js)
 
 ```
 65598.721 requests/second
 ```
 
-#### Bun
+#### Bun - (buns http server is also built on uWebSockets.js)
 
 ```
 64097.835 requests/second
@@ -72,7 +72,7 @@ All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04,
 63300.917 requests/second
 ```
 
-#### Node.js http
+#### Node.js standard http library
 
 ```
 32322.931 requests/second
