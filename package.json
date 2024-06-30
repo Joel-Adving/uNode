@@ -3,10 +3,11 @@
   "version": "1.0.0",
   "description": "A high-performance Node.js framework built on uWebSockets.js for fast and efficient web servers.",
   "keywords": [
-    "uWebSockets.js",
-    "Node.js",
-    "Framework",
-    "Web Server"
+    "node",
+    "uWebSockets",
+    "framework",
+    "fast",
+    "performance"
   ],
   "author": "Joel",
   "license": "MIT",
@@ -14,8 +15,7 @@
   "type": "module",
   "scripts": {
     "build": "swc src -d dist",
-    "start": "node dist/src/index.js",
-    "dev": "nodemon -L -e ts --exec \"npm run build && npm start\""
+    "start": "node dist/src/index.js"
   },
   "dependencies": {
     "mrmime": "^2.0.0",
@@ -26,14 +26,6 @@
     "@swc/core": "^1.6.5",
     "@types/ip": "^1.1.3",
     "@types/node": "^20.14.9",
-    "dotenv": "^16.4.5",
-    "nodemon": "^3.1.4",
-    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.5.2"
-  },
-  "nodemonConfig": {
-    "ignore": [
-      "dist"
-    ]
   }
 }
