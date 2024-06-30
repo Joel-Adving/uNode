@@ -12,6 +12,28 @@ uNode is a high-performance Node.js framework built on top of uWebSockets.js, pr
 - Streaming support
 - Handling of cookies and request bodies
 
+## Installation
+
+To install `uNode`, use your prefered package manager
+
+```bash
+pnpm add @oki.gg/unode
+```
+
+```bash
+npm i @oki.gg/unode
+```
+
+```ts
+const { App } = require('@oki.gg/unode')
+
+new App()
+  .get('/', (req, res) => {
+    res.send('Hello, World!')
+  })
+  .listen(3000)
+```
+
 ### Benchmarks
 
 All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04, AMD Ryzen 5 5600X 3,7GHz 6-core 12-thread CPU, 32GB RAM
@@ -23,7 +45,9 @@ All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04,
 ### Result
 
 ```
+
 74662.875 requests/second
+
 ```
 
 ## Comparison with other relevant frameworks
@@ -31,53 +55,75 @@ All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04,
 #### Go net/http
 
 ```
+
 131820.081 requests/second
+
 ```
 
 #### ASP.NET Core minimal API
 
 ```
+
 123631.414 requests/second
+
 ```
 
 #### uWebSockets.js
 
 ```
+
 76586.927 requests/second
+
 ```
 
 #### uNode (This project (uWebSockets.js))
 
 ```
+
 74662.875 requests/second
+
 ```
 
 #### hyper-express (uWebSockets.js)
 
 ```
+
 65598.721 requests/second
+
 ```
 
 #### Bun - (buns http server is also built on uWebSockets.js)
 
 ```
+
 64097.835 requests/second
+
 ```
 
 #### ElysiaJS
 
 ```
+
 63300.917 requests/second
+
 ```
 
 #### Node.js standard http library
 
 ```
+
 32322.931 requests/second
+
 ```
 
 #### Express.js
 
 ```
+
 9322.392 requests/second
+
+```
+
+```
+
 ```
