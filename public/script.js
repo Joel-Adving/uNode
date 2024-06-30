@@ -7,8 +7,7 @@
 
 /** @returns {Promise<Todo[]>} */
 async function getTodos() {
-  const todos = await fetch('/todos').then((res) => res.json())
-  return todos
+  return fetch('/todos').then((res) => res.json())
 }
 
 /** @param {string} id*/
@@ -101,15 +100,8 @@ window.addEventListener('DOMContentLoaded', async () => {
 /** @param {Todo} todo*/
 function todoTempalte(todo) {
   const comleted = todo.completed === 1 ? true : false
-  return `<div
-            id="todo-${todo.id}" 
-            data-completed="${comleted}"
-            style="display: flex; gap: 1rem; cursor: pointer;"
-          >
-            <div 
-              onclick="toggleTodo(${todo.id})" 
-              style="text-decoration: ${comleted ? 'line-through' : 'none'};"
-            > 
+  return `<div id="todo-${todo.id}" data-completed="${comleted}" style="display: flex; gap: 1rem; cursor: pointer;">
+            <div onclick="toggleTodo(${todo.id})" style="text-decoration: ${comleted ? 'line-through' : 'none'};"> 
               ${todo.title} ${comleted ? '✅' : ''}
             </div>
             <button onclick="deleteDoto(${todo.id})" style="cursor: pointer;">Delete</button>
