@@ -16,19 +16,19 @@ This project leverages the high-performance capabilities of the uWebSockets.js c
 
 ### Benchmarks
 
-Benchmarks where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04, AMD Ryzen 5 5600X 3,7GHz 6-core 12-thread CPU, 32GB RAM
+All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04, AMD Ryzen 5 5600X 3,7GHz 6-core 12-thread CPU, 32GB RAM
 
 100 concurrent users, 1 seconds ramp-up period, 60 seconds test duration.
 
 "Hello world" plain text response.
 
-#### Result
+### Result
 
 ```
 72475.875 requests/second
 ```
 
-### Comparisons with other popular frameworks
+## Comparisons with other popular frameworks
 
 #### Go net/http
 
