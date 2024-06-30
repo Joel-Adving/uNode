@@ -22,7 +22,25 @@ Benchmarks where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04
 
 "Hello world" plain text response.
 
-#### Results sorted in descending order by average throughput requests/second
+#### Result
+
+```
+72475.875 requests/second
+```
+
+### Comparisons with other popular frameworks
+
+#### Go net/http
+
+```
+131820.081 requests/second
+```
+
+#### Asp.net core
+
+```
+123631.414 requests/second
+```
 
 #### uWebSockets.js
 
@@ -52,6 +70,12 @@ Benchmarks where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04
 
 ```
 63300.917 requests/second
+```
+
+#### Node.js
+
+```
+27345.801 requests/second
 ```
 
 #### Express.js
