@@ -17,10 +17,12 @@ export const usersHandler = new Router()
     if (!body.username || !body.password) {
       return res.status(400).send('Username or password missing')
     }
+
     const user = usersDb.getUserByUsername(body.username)
     if (user) {
       return res.status(400).send('User already exists')
     }
+
     usersDb.createUser(body.username, body.password)
     res.send('User created')
   })

@@ -1,6 +1,5 @@
 import { Router } from '../app'
 import { todosDb } from '../db/queries'
-import { parseBody } from '../utils/uws-utils'
 
 export const todosHandler = new Router()
   .use((req, res, next) => {
@@ -31,12 +30,12 @@ export const todosHandler = new Router()
 
   .put('/:id', async (req, res) => {
     const id = parseInt(req.getParameter(0))
-    const body = await parseBody<{ completed: boolean }>(res)
+    const body = await req.body<{ completed: boolean }>()
     const todo = body.completed ? todosDb.completeTodo(id) : todosDb.uncompleteTodo(id)
     res.json(todo)
   })
 
-  .delete('/:id', async (req, res) => {
+  .delete('/:id', (req, res) => {
     const id = req.getParameter(0)
     todosDb.deleteTodo(parseInt(id))
     const todos = todosDb.getTodos()
