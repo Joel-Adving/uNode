@@ -24,11 +24,11 @@ export declare class App {
         threads?: number;
     });
     private handleRequest;
-    private handleReturn;
-    private patchRequestResponse;
     private executeMiddlewares;
+    private handleReturn;
     private extractKeysFromPath;
     private extractParams;
+    private patchRequestResponse;
     group(path: string, router: Router): this;
     use(handler: Middleware): this;
     get(path: string, handler: (req: Request, res: Response) => void): this;

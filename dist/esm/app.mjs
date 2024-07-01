@@ -79,6 +79,17 @@ export class App {
             }
         });
     }
+    executeMiddlewares(req, res, handlers, finalHandler) {
+        const next = (index) => {
+            if (index < handlers.length) {
+                handlers[index](req, res, () => next(index + 1));
+            }
+            else {
+                finalHandler();
+            }
+        };
+        next(0);
+    }
     handleReturn(value, res) {
         if (!res.done) {
             if (typeof value === 'string') {
@@ -88,6 +99,23 @@ export class App {
                 res.json(value);
             }
         }
+    }
+    extractKeysFromPath(path) {
+        const keys = [];
+        const segments = path.split('/');
+        for (const segment of segments) {
+            if (segment.startsWith(':')) {
+                keys.push(segment.substring(1));
+            }
+        }
+        return keys;
+    }
+    extractParams(req, paramKeys) {
+        const params = {};
+        paramKeys.forEach((key, index) => {
+            params[key] = req.getParameter(index);
+        });
+        return params;
     }
     patchRequestResponse(req, res, paramKeys, isAsync) {
         res._end = res.end;
@@ -152,34 +180,6 @@ export class App {
         if (paramKeys.length > 0) {
             req.params = this.extractParams(req, paramKeys);
         }
-    }
-    executeMiddlewares(req, res, handlers, finalHandler) {
-        const next = (index) => {
-            if (index < handlers.length) {
-                handlers[index](req, res, () => next(index + 1));
-            }
-            else {
-                finalHandler();
-            }
-        };
-        next(0);
-    }
-    extractKeysFromPath(path) {
-        const keys = [];
-        const segments = path.split('/');
-        for (const segment of segments) {
-            if (segment.startsWith(':')) {
-                keys.push(segment.substring(1));
-            }
-        }
-        return keys;
-    }
-    extractParams(req, paramKeys) {
-        const params = {};
-        paramKeys.forEach((key, index) => {
-            params[key] = req.getParameter(index);
-        });
-        return params;
     }
     group(path, router) {
         router.routes.forEach((route) => {
