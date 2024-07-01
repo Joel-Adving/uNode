@@ -45,6 +45,12 @@ To work around this limitation, extract all necessary information from the reque
 
 ## Documentation
 
+#### Multi-threading
+
+```ts
+const app = new App({ threads: 4 }) // defaults to 1 thread if not specified
+```
+
 #### Minimalistic chainable API
 
 ```ts
@@ -65,12 +71,6 @@ app.get('/', (req, res) => {
 app.listen(3000, () => {
   console.log('Server is running on port 3000')
 })
-```
-
-#### Multi-threaded server
-
-```ts
-const app = new App({ threads: 4 }) // defaults to 1 thread if not specified
 ```
 
 #### Request body parsing and JSON response
