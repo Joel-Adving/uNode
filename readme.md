@@ -1,17 +1,18 @@
 # uNode
 
-uNode is a high-performance Node.js framework built on top of uWebSockets.js, providing a fast and efficient solution for building web servers and applications.
+uNode is a high-performance Node.js web api framework built on top of uWebSockets.js with multi-threading support. It is designed to be simple, fast, and easy to use. uNode is inspired by Express.js and ASP.NET Core minimal API. 
 
 ## Features
 
-- Blazing fast performance with uWebSockets.js
-- built in multi-threading support
+- Blazing fast performance
+- Multi-threading
 - Simple and intuitive API
 - Route groups
 - Middleware
 - File serving
 - Streaming
-- Cookies and request body bodies
+- Cookies  
+- Request body parsing
 
 ## Installation
 
