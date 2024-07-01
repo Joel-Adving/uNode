@@ -1,4 +1,5 @@
-import { HttpResponse, HttpRequest } from 'uWebSockets.js';
+import { Writable } from 'stream';
+import { Response, Request } from './types';
 /**
  * Serve static files from a specified directory.
  *
@@ -9,7 +10,7 @@ import { HttpResponse, HttpRequest } from 'uWebSockets.js';
  * app.get('/*', serveStatic(path.resolve(rootDir, 'public')));
  * ```
  */
-export declare function serveStatic(dir: string): (req: HttpRequest, res: HttpResponse) => any;
+export declare function serveStatic(dir: string): (req: Request, res: Response) => any;
 /**
  * Get the file statistics for a given file path.
  * @example
@@ -48,7 +49,7 @@ export declare function getFileStats(filePath: string): {
  * });
  * ```
  */
-export declare function streamFile(res: HttpResponse, fileStats: ReturnType<typeof getFileStats>): HttpResponse | undefined;
+export declare function streamFile(res: Response, fileStats: ReturnType<typeof getFileStats>): import("uWebSockets.js").HttpResponse | undefined;
 /**
  * Send a file in the HTTP response.
  *
@@ -67,4 +68,10 @@ export declare function streamFile(res: HttpResponse, fileStats: ReturnType<type
  * });
  * ```
  */
-export declare function sendFile(ifModifiedSince: string, res: HttpResponse, filePath: string): HttpResponse | undefined;
+export declare function sendFile(ifModifiedSince: string, res: Response, filePath: string): import("uWebSockets.js").HttpResponse | undefined;
+export declare class uNodeWritable extends Writable {
+    private res;
+    constructor(res: Response);
+    _write(chunk: Buffer, encoding: string, callback: () => void): void;
+    _final(callback: () => void): void;
+}

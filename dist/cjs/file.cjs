@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.uNodeWritable = void 0;
 exports.serveStatic = serveStatic;
 exports.getFileStats = getFileStats;
 exports.streamFile = streamFile;
@@ -10,6 +11,7 @@ exports.sendFile = sendFile;
 const path_1 = __importDefault(require("path"));
 const mrmime_1 = require("mrmime");
 const fs_1 = require("fs");
+const stream_1 = require("stream");
 /**
  * Serve static files from a specified directory.
  *
@@ -158,3 +160,64 @@ function sendFile(ifModifiedSince, res, filePath) {
     res.writeHeader('Last-Modified', lastModified);
     streamFile(res, fileStats);
 }
+class uNodeWritable extends stream_1.Writable {
+    constructor(res) {
+        super();
+        this.res = res;
+    }
+    _write(chunk, encoding, callback) {
+        if (this.res.done) {
+            callback();
+            return;
+        }
+        this.res.cork(() => {
+            if (this.res.done) {
+                callback();
+                return;
+            }
+            const arrayBufferChunk = chunk.buffer.slice(chunk.byteOffset, chunk.byteOffset + chunk.byteLength);
+            const [ok, done] = this.res.tryEnd(arrayBufferChunk, chunk.byteLength);
+            if (done) {
+                this.res.done = true;
+                this.res.end();
+                callback();
+            }
+            else if (!ok) {
+                // @ts-ignore
+                this.res.onWritable((offset) => {
+                    this.res.cork(() => {
+                        if (this.res.done) {
+                            callback();
+                            return false;
+                        }
+                        const [ok, done] = this.res.tryEnd(arrayBufferChunk.slice(offset), chunk.byteLength);
+                        if (done) {
+                            this.res.done = true;
+                            this.res.end();
+                        }
+                        callback();
+                        return ok;
+                    });
+                });
+            }
+            else {
+                callback();
+            }
+        });
+    }
+    _final(callback) {
+        if (!this.res.done) {
+            this.res.cork(() => {
+                if (!this.res.done) {
+                    this.res.end();
+                    this.res.done = true;
+                }
+                callback();
+            });
+        }
+        else {
+            callback();
+        }
+    }
+}
+exports.uNodeWritable = uNodeWritable;

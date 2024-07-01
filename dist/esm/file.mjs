@@ -1,6 +1,7 @@
 import path from 'path';
 import { lookup } from 'mrmime';
 import { createReadStream, lstatSync } from 'fs';
+import { Writable } from 'stream';
 /**
  * Serve static files from a specified directory.
  *
@@ -148,4 +149,64 @@ export function sendFile(ifModifiedSince, res, filePath) {
     res.writeHeader('Content-Type', contentType);
     res.writeHeader('Last-Modified', lastModified);
     streamFile(res, fileStats);
+}
+export class uNodeWritable extends Writable {
+    constructor(res) {
+        super();
+        this.res = res;
+    }
+    _write(chunk, encoding, callback) {
+        if (this.res.done) {
+            callback();
+            return;
+        }
+        this.res.cork(() => {
+            if (this.res.done) {
+                callback();
+                return;
+            }
+            const arrayBufferChunk = chunk.buffer.slice(chunk.byteOffset, chunk.byteOffset + chunk.byteLength);
+            const [ok, done] = this.res.tryEnd(arrayBufferChunk, chunk.byteLength);
+            if (done) {
+                this.res.done = true;
+                this.res.end();
+                callback();
+            }
+            else if (!ok) {
+                // @ts-ignore
+                this.res.onWritable((offset) => {
+                    this.res.cork(() => {
+                        if (this.res.done) {
+                            callback();
+                            return false;
+                        }
+                        const [ok, done] = this.res.tryEnd(arrayBufferChunk.slice(offset), chunk.byteLength);
+                        if (done) {
+                            this.res.done = true;
+                            this.res.end();
+                        }
+                        callback();
+                        return ok;
+                    });
+                });
+            }
+            else {
+                callback();
+            }
+        });
+    }
+    _final(callback) {
+        if (!this.res.done) {
+            this.res.cork(() => {
+                if (!this.res.done) {
+                    this.res.end();
+                    this.res.done = true;
+                }
+                callback();
+            });
+        }
+        else {
+            callback();
+        }
+    }
 }
