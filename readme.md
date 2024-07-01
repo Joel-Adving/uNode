@@ -34,11 +34,11 @@ Error: uWS.HttpRequest must not be accessed after await or route handler return.
 To work around this limitation, extract all necessary information from the request object before performing any asynchronous operations. Here is an example:
 
 ```ts
-app.get('/', async (req, res) => {
+.get('/', async (req, res) => {
   const someHeader = req.getHeader('someHeader')
-  // Perform asynchronous operations after extracting headers or other necessary data
+  const body = await req.body()
   await new Promise((resolve) => setTimeout(resolve, 1000))
-  return someHeader
+  res.json({ someHeader, body })
 })
 ```
 
