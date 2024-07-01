@@ -1,7 +1,7 @@
 {
   "name": "@oki.gg/unode",
-  "version": "1.4.1",
-  "description": "A high-performance Node.js web api framework framework built on uWebSockets.js.",
+  "version": "1.4.2",
+  "description": "A high-performance Node.js web api framework built on uWebSockets.js.",
   "keywords": [
     "node",
     "uWebSockets",
