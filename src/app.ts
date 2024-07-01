@@ -121,7 +121,6 @@ export class App {
     res._end = res.end
     res.end = (body) => {
       if (res.done) {
-        this.logger.warn('uWS DEBUG: Called end after done')
         return res
       }
       res.done = true

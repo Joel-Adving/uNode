@@ -100,14 +100,14 @@ function streamFile(res, fileStats) {
         return res.writeStatus('404').end('File not found');
     }
     const readStream = (0, fs_1.createReadStream)(filePath);
-    function destroyReadStream() {
+    const destroyReadStream = () => {
         !readStream.destroyed && readStream.destroy();
-    }
-    function onError(error) {
+    };
+    const onError = (error) => {
         destroyReadStream();
         throw error;
-    }
-    function onDataChunk(chunk) {
+    };
+    const onDataChunk = (chunk) => {
         const arrayBufferChunk = toArrayBuffer(chunk);
         res.cork(() => {
             const lastOffset = res.getWriteOffset();
@@ -123,7 +123,7 @@ function streamFile(res, fileStats) {
                 });
             }
         });
-    }
+    };
     res.onAborted(destroyReadStream);
     readStream.on('data', onDataChunk).on('error', onError).on('end', destroyReadStream);
 }

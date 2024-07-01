@@ -1,7 +1,8 @@
 import path from 'path'
 import { lookup } from 'mrmime'
 import { createReadStream, lstatSync, Stats } from 'fs'
-import { HttpResponse, HttpRequest } from 'uWebSockets.js'
+import { Writable } from 'stream'
+import { Response, Request } from './types'
 
 /**
  * Serve static files from a specified directory.
@@ -14,7 +15,7 @@ import { HttpResponse, HttpRequest } from 'uWebSockets.js'
  * ```
  */
 export function serveStatic(dir: string) {
-  return (req: HttpRequest, res: HttpResponse) => {
+  return (req: Request, res: Response) => {
     try {
       const url = req.getUrl().slice(1) || 'index.html'
       const filePath = path.resolve(dir, url)
@@ -98,7 +99,7 @@ function toArrayBuffer(buffer: Buffer) {
  * });
  * ```
  */
-export function streamFile(res: HttpResponse, fileStats: ReturnType<typeof getFileStats>) {
+export function streamFile(res: Response, fileStats: ReturnType<typeof getFileStats>) {
   const filePath = fileStats?.filePath
   const size = fileStats?.size
 
@@ -107,16 +108,16 @@ export function streamFile(res: HttpResponse, fileStats: ReturnType<typeof getFi
   }
 
   const readStream = createReadStream(filePath)
-  function destroyReadStream() {
+  const destroyReadStream = () => {
     !readStream.destroyed && readStream.destroy()
   }
 
-  function onError(error: Error) {
+  const onError = (error: Error) => {
     destroyReadStream()
     throw error
   }
 
-  function onDataChunk(chunk: Buffer) {
+  const onDataChunk = (chunk: Buffer) => {
     const arrayBufferChunk = toArrayBuffer(chunk)
 
     res.cork(() => {
@@ -161,7 +162,7 @@ export function streamFile(res: HttpResponse, fileStats: ReturnType<typeof getFi
  * });
  * ```
  */
-export function sendFile(ifModifiedSince: string, res: HttpResponse, filePath: string) {
+export function sendFile(ifModifiedSince: string, res: Response, filePath: string) {
   const fileStats = getFileStats(filePath)
 
   if (!fileStats) {
@@ -178,4 +179,71 @@ export function sendFile(ifModifiedSince: string, res: HttpResponse, filePath: s
   res.writeHeader('Last-Modified', lastModified)
 
   streamFile(res, fileStats)
+}
+
+export class uNodeWritable extends Writable {
+  private res: Response
+
+  constructor(res: Response) {
+    super()
+    this.res = res
+  }
+
+  _write(chunk: Buffer, encoding: string, callback: () => void) {
+    if (this.res.done) {
+      callback()
+      return
+    }
+
+    this.res.cork(() => {
+      if (this.res.done) {
+        callback()
+        return
+      }
+
+      const arrayBufferChunk = chunk.buffer.slice(chunk.byteOffset, chunk.byteOffset + chunk.byteLength)
+
+      const [ok, done] = this.res.tryEnd(arrayBufferChunk, chunk.byteLength)
+
+      if (done) {
+        this.res.done = true
+        this.res.end()
+        callback()
+      } else if (!ok) {
+        // @ts-ignore
+        this.res.onWritable((offset) => {
+          this.res.cork(() => {
+            if (this.res.done) {
+              callback()
+              return false
+            }
+
+            const [ok, done] = this.res.tryEnd(arrayBufferChunk.slice(offset), chunk.byteLength)
+            if (done) {
+              this.res.done = true
+              this.res.end()
+            }
+            callback()
+            return ok
+          })
+        })
+      } else {
+        callback()
+      }
+    })
+  }
+
+  _final(callback: () => void) {
+    if (!this.res.done) {
+      this.res.cork(() => {
+        if (!this.res.done) {
+          this.res.end()
+          this.res.done = true
+        }
+        callback()
+      })
+    } else {
+      callback()
+    }
+  }
 }
