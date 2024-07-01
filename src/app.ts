@@ -3,7 +3,7 @@ import { cpus } from 'os'
 import cluster from 'cluster'
 import { Router } from './router'
 import { sendFile } from './file'
-import { getCookie, getQueryParams, parseBody, setCookie } from './utils'
+import { getCookie, getQueryParams, isAsyncFunction, parseBody, setCookie } from './utils'
 import { HttpMethod, IApp, ILogger, Middleware, Request, Response } from './types'
 
 /**
@@ -42,39 +42,57 @@ export class App {
   private handleRequest(
     method: HttpMethod,
     path: string,
-    handler: (req: Request, res: Response) => void,
+    handler: (req: Request, res: Response) => void | Promise<void>,
     paramKeys: string[] = []
   ) {
     ;(this.app[method] as (path: string, handler: (res: Response, req: Request) => void) => void).call(
       this.app,
       path,
       (res, req) => {
-        // Cork the handler to improve performance when writing to the response
-        res.cork(() => {
-          // Add custom properties and methods to the request and response objects
-          this.patchRequestResponse(req, res, paramKeys)
-          try {
-            // Execute middlewares before the route handler
-            this.executeMiddlewares(req, res, this.middlewares, () => {
+        const isAsync = isAsyncFunction(handler)
+        // Add custom properties and methods to the request and response objects
+        this.patchRequestResponse(req, res, paramKeys, isAsync)
+        try {
+          // Execute middlewares before the route handler
+          this.executeMiddlewares(req, res, this.middlewares, () => {
+            if (isAsync) {
+              ;(async () => {
+                const result = await handler(req, res)
+                if (!res.done) {
+                  res.cork(() => {
+                    if (typeof result === 'string') {
+                      res.end(result)
+                    }
+                    if (typeof result === 'object') {
+                      res.json(result)
+                    }
+                  })
+                }
+              })()
+            } else {
               const result = handler(req, res)
-              // If the route handler returns a string and the response is not done, end the response
-              if (typeof result === 'string' && !res.done) {
-                res.end(result)
+              if (!res.done) {
+                if (typeof result === 'string') {
+                  res.end(result)
+                }
+                if (typeof result === 'object') {
+                  res.json(result)
+                }
               }
-            })
-          } catch (error) {
-            // Global error handler
-            this.logger.error(error)
-            if (!res.done) {
-              res.writeStatus('500 Internal Server Error').end('Internal Server Error')
             }
+          })
+        } catch (error) {
+          // Global error handler
+          this.logger.error(error)
+          if (!res.done) {
+            res.writeStatus('500 Internal Server Error').end('Internal Server Error')
           }
-        })
+        }
       }
     )
   }
 
-  private patchRequestResponse(req: Request, res: Response, paramKeys: string[]) {
+  private patchRequestResponse(req: Request, res: Response, paramKeys: string[], isAsync: boolean) {
     res._end = res.end
     res.end = (body) => {
       if (res.done) {
@@ -82,6 +100,11 @@ export class App {
         return res
       }
       res.done = true
+      if (isAsync) {
+        return res.cork(() => {
+          res._end(body)
+        })
+      }
       return res._end(body)
     }
 
@@ -98,9 +121,7 @@ export class App {
       return res
     }
 
-    res.send = (body) => {
-      res.end(body)
-    }
+    res.send = (body) => res.end(body)
 
     res.status = (code) => {
       res.writeStatus(String(code))
@@ -113,17 +134,24 @@ export class App {
     }
 
     res.json = (body) => {
-      res.writeHeader('Content-Type', 'application/json')
-      try {
-        res.end(JSON.stringify(body))
-      } catch (error) {
-        throw new Error('Failed to stringify JSON', { cause: error })
+      if (isAsync) {
+        return res.cork(() => {
+          res.writeHeader('Content-Type', 'application/json')
+          res.end(JSON.stringify(body))
+        })
       }
+      res.writeHeader('Content-Type', 'application/json')
+      res.end(JSON.stringify(body))
     }
 
     const ifModifiedSince = req.getHeader('if-modified-since')
 
     res.sendFile = (filePath) => {
+      if (isAsync) {
+        return res.cork(() => {
+          sendFile(ifModifiedSince, res, filePath)
+        })
+      }
       sendFile(ifModifiedSince, res, filePath)
     }
 

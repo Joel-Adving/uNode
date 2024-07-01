@@ -124,3 +124,7 @@ export function getQueryParams(req: Request): { [key: string]: string } {
   })
   return params
 }
+
+export function isAsyncFunction(func: Function): boolean {
+  return func.constructor.name === 'AsyncFunction' || func.constructor.name === 'Promise'
+}

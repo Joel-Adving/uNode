@@ -54,3 +54,4 @@ export declare function setCookie(res: Response, name: string, value: string, op
 export declare function getQueryParams(req: Request): {
     [key: string]: string;
 };
+export declare function isAsyncFunction(func: Function): boolean;

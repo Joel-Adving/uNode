@@ -134,7 +134,7 @@ All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04,
 
 ```
 160091.185 requests/second (multi-threaded, 4 threads)
-74662.875 requests/second (single-threaded)
+77227.514 requests/second (single-threaded)
 ```
 
 ## Comparison with other relevant frameworks
@@ -160,13 +160,13 @@ All tests where done using Apache JMeter on a Windows 11 PC, WSL 2 ubuntu 22.04,
 #### uWebSockets.js
 
 ```
-76586.927 requests/second
+78089.792 requests/second
 ```
 
 #### uNode (single-threaded) (uWebSockets.js)
 
 ```
-74662.875 requests/second
+77227.514 requests/second
 ```
 
 #### hyper-express (uWebSockets.js)

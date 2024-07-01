@@ -4,6 +4,7 @@ exports.parseBody = parseBody;
 exports.getCookie = getCookie;
 exports.setCookie = setCookie;
 exports.getQueryParams = getQueryParams;
+exports.isAsyncFunction = isAsyncFunction;
 /**
  * Parse the JSON body of the request.
  *
@@ -110,4 +111,7 @@ function getQueryParams(req) {
         params[key] = value;
     });
     return params;
+}
+function isAsyncFunction(func) {
+    return func.constructor.name === 'AsyncFunction' || func.constructor.name === 'Promise';
 }

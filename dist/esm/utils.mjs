@@ -105,3 +105,6 @@ export function getQueryParams(req) {
     });
     return params;
 }
+export function isAsyncFunction(func) {
+    return func.constructor.name === 'AsyncFunction' || func.constructor.name === 'Promise';
+}

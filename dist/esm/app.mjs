@@ -23,7 +23,7 @@ import uWS from 'uWebSockets.js';
 import { cpus } from 'os';
 import cluster from 'cluster';
 import { sendFile } from './file.mjs';
-import { getCookie, getQueryParams, parseBody, setCookie } from './utils.mjs';
+import { getCookie, getQueryParams, isAsyncFunction, parseBody, setCookie } from './utils.mjs';
 /**
  *
  * Main uNode class that provides methods for setting up HTTP routes, middleware, and WebSocket behavior.
@@ -51,31 +51,51 @@ export class App {
     handleRequest(method, path, handler, paramKeys = []) {
         ;
         this.app[method].call(this.app, path, (res, req) => {
-            // Cork the handler to improve performance when writing to the response
-            res.cork(() => {
-                // Add custom properties and methods to the request and response objects
-                this.patchRequestResponse(req, res, paramKeys);
-                try {
-                    // Execute middlewares before the route handler
-                    this.executeMiddlewares(req, res, this.middlewares, () => {
-                        const result = handler(req, res);
-                        // If the route handler returns a string and the response is not done, end the response
-                        if (typeof result === 'string' && !res.done) {
-                            res.end(result);
-                        }
-                    });
-                }
-                catch (error) {
-                    // Global error handler
-                    this.logger.error(error);
-                    if (!res.done) {
-                        res.writeStatus('500 Internal Server Error').end('Internal Server Error');
+            const isAsync = isAsyncFunction(handler);
+            // Add custom properties and methods to the request and response objects
+            this.patchRequestResponse(req, res, paramKeys, isAsync);
+            try {
+                // Execute middlewares before the route handler
+                this.executeMiddlewares(req, res, this.middlewares, () => {
+                    if (isAsync) {
+                        ;
+                        (() => __awaiter(this, void 0, void 0, function* () {
+                            const result = yield handler(req, res);
+                            if (!res.done) {
+                                res.cork(() => {
+                                    if (typeof result === 'string') {
+                                        res.end(result);
+                                    }
+                                    if (typeof result === 'object') {
+                                        res.json(result);
+                                    }
+                                });
+                            }
+                        }))();
                     }
+                    else {
+                        const result = handler(req, res);
+                        if (!res.done) {
+                            if (typeof result === 'string') {
+                                res.end(result);
+                            }
+                            if (typeof result === 'object') {
+                                res.json(result);
+                            }
+                        }
+                    }
+                });
+            }
+            catch (error) {
+                // Global error handler
+                this.logger.error(error);
+                if (!res.done) {
+                    res.writeStatus('500 Internal Server Error').end('Internal Server Error');
                 }
-            });
+            }
         });
     }
-    patchRequestResponse(req, res, paramKeys) {
+    patchRequestResponse(req, res, paramKeys, isAsync) {
         res._end = res.end;
         res.end = (body) => {
             if (res.done) {
@@ -83,6 +103,11 @@ export class App {
                 return res;
             }
             res.done = true;
+            if (isAsync) {
+                return res.cork(() => {
+                    res._end(body);
+                });
+            }
             return res._end(body);
         };
         res.onAborted(() => {
@@ -96,9 +121,7 @@ export class App {
             res.abortEvents.push(handler);
             return res;
         };
-        res.send = (body) => {
-            res.end(body);
-        };
+        res.send = (body) => res.end(body);
         res.status = (code) => {
             res.writeStatus(String(code));
             return res;
@@ -108,16 +131,22 @@ export class App {
             return res;
         };
         res.json = (body) => {
+            if (isAsync) {
+                return res.cork(() => {
+                    res.writeHeader('Content-Type', 'application/json');
+                    res.end(JSON.stringify(body));
+                });
+            }
             res.writeHeader('Content-Type', 'application/json');
-            try {
-                res.end(JSON.stringify(body));
-            }
-            catch (error) {
-                throw new Error('Failed to stringify JSON', { cause: error });
-            }
+            res.end(JSON.stringify(body));
         };
         const ifModifiedSince = req.getHeader('if-modified-since');
         res.sendFile = (filePath) => {
+            if (isAsync) {
+                return res.cork(() => {
+                    sendFile(ifModifiedSince, res, filePath);
+                });
+            }
             sendFile(ifModifiedSince, res, filePath);
         };
         res.setCookie = (name, value, options) => {
