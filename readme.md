@@ -19,7 +19,30 @@ uNode is a high-performance Node.js framework built on top of uWebSockets.js, pr
 npm i "@oki.gg/unode"
 ```
 
-## Examples
+### Important Note on Async Request Handling
+
+uNode is built on top of uWebSockets.js, which has specific constraints regarding asynchronous operations within route handlers. You must not access the request object (req) after using await or  returning a promise. This is due to the fact that the request object is not valid after the asynchronous operation completes.
+
+Attempting to access the request object after an asynchronous operation will result in an error like the following:
+  
+```bash
+Error: uWS.HttpRequest must not be accessed after await or route handler return. See documentation for uWS.HttpRequest and consult the user manual.
+```
+
+### Workaround
+
+To work around this limitation, extract all necessary information from the request object before performing any asynchronous operations. Here is an example:
+
+```ts
+app.get('/', async (req, res) => {
+  const someHeader = req.getHeader('someHeader')
+  // Perform asynchronous operations after extracting headers or other necessary data
+  await new Promise((resolve) => setTimeout(resolve, 1000))
+  return someHeader
+})
+```
+
+## Documentation
 
 #### Minimalistic chainable API
 
