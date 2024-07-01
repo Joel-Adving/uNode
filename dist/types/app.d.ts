@@ -24,6 +24,7 @@ export declare class App {
         threads?: number;
     });
     private handleRequest;
+    private handleReturn;
     private patchRequestResponse;
     private executeMiddlewares;
     private extractKeysFromPath;

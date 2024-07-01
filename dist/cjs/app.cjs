@@ -66,29 +66,13 @@ class App {
                     if (isAsync) {
                         ;
                         (() => __awaiter(this, void 0, void 0, function* () {
-                            const result = yield handler(req, res);
-                            if (!res.done) {
-                                res.cork(() => {
-                                    if (typeof result === 'string') {
-                                        res.end(result);
-                                    }
-                                    if (typeof result === 'object') {
-                                        res.json(result);
-                                    }
-                                });
-                            }
+                            const returnValue = yield handler(req, res);
+                            this.handleReturn(returnValue, res);
                         }))();
                     }
                     else {
-                        const result = handler(req, res);
-                        if (!res.done) {
-                            if (typeof result === 'string') {
-                                res.end(result);
-                            }
-                            if (typeof result === 'object') {
-                                res.json(result);
-                            }
-                        }
+                        const returnValue = handler(req, res);
+                        this.handleReturn(returnValue, res);
                     }
                 });
             }
@@ -100,6 +84,16 @@ class App {
                 }
             }
         });
+    }
+    handleReturn(value, res) {
+        if (!res.done) {
+            if (typeof value === 'string') {
+                res.end(value);
+            }
+            if (typeof value === 'object') {
+                res.json(value);
+            }
+        }
     }
     patchRequestResponse(req, res, paramKeys, isAsync) {
         res._end = res.end;

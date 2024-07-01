@@ -57,28 +57,12 @@ export class App {
           this.executeMiddlewares(req, res, this.middlewares, () => {
             if (isAsync) {
               ;(async () => {
-                const result = await handler(req, res)
-                if (!res.done) {
-                  res.cork(() => {
-                    if (typeof result === 'string') {
-                      res.end(result)
-                    }
-                    if (typeof result === 'object') {
-                      res.json(result)
-                    }
-                  })
-                }
+                const returnValue = await handler(req, res)
+                this.handleReturn(returnValue, res)
               })()
             } else {
-              const result = handler(req, res)
-              if (!res.done) {
-                if (typeof result === 'string') {
-                  res.end(result)
-                }
-                if (typeof result === 'object') {
-                  res.json(result)
-                }
-              }
+              const returnValue = handler(req, res)
+              this.handleReturn(returnValue, res)
             }
           })
         } catch (error) {
@@ -90,6 +74,47 @@ export class App {
         }
       }
     )
+  }
+
+  private executeMiddlewares(req: Request, res: Response, handlers: Middleware[], finalHandler: () => void) {
+    const next = (index: number) => {
+      if (index < handlers.length) {
+        handlers[index](req, res, () => next(index + 1))
+      } else {
+        finalHandler()
+      }
+    }
+    next(0)
+  }
+
+  private handleReturn(value: any, res: Response) {
+    if (!res.done) {
+      if (typeof value === 'string') {
+        res.end(value)
+      }
+      if (typeof value === 'object') {
+        res.json(value)
+      }
+    }
+  }
+
+  private extractKeysFromPath(path: string): string[] {
+    const keys: string[] = []
+    const segments = path.split('/')
+    for (const segment of segments) {
+      if (segment.startsWith(':')) {
+        keys.push(segment.substring(1))
+      }
+    }
+    return keys
+  }
+
+  private extractParams(req: Request, paramKeys: string[]): { [key: string]: string } {
+    const params: { [key: string]: string } = {}
+    paramKeys.forEach((key, index) => {
+      params[key] = req.getParameter(index)
+    })
+    return params
   }
 
   private patchRequestResponse(req: Request, res: Response, paramKeys: string[], isAsync: boolean) {
@@ -168,36 +193,6 @@ export class App {
     if (paramKeys.length > 0) {
       req.params = this.extractParams(req, paramKeys)
     }
-  }
-
-  private executeMiddlewares(req: Request, res: Response, handlers: Middleware[], finalHandler: () => void) {
-    const next = (index: number) => {
-      if (index < handlers.length) {
-        handlers[index](req, res, () => next(index + 1))
-      } else {
-        finalHandler()
-      }
-    }
-    next(0)
-  }
-
-  private extractKeysFromPath(path: string): string[] {
-    const keys: string[] = []
-    const segments = path.split('/')
-    for (const segment of segments) {
-      if (segment.startsWith(':')) {
-        keys.push(segment.substring(1))
-      }
-    }
-    return keys
-  }
-
-  private extractParams(req: Request, paramKeys: string[]): { [key: string]: string } {
-    const params: { [key: string]: string } = {}
-    paramKeys.forEach((key, index) => {
-      params[key] = req.getParameter(index)
-    })
-    return params
   }
 
   group(path: string, router: Router) {
