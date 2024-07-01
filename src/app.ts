@@ -76,6 +76,14 @@ export class App {
 
   private patchRequestResponse(req: Request, res: Response, paramKeys: string[]) {
     res._end = res.end
+    res.end = (body) => {
+      if (res.done) {
+        this.logger.warn('uWS DEBUG: Called end after done')
+        return res
+      }
+      res.done = true
+      return res._end(body)
+    }
 
     res.onAborted(() => {
       res.done = true
@@ -90,17 +98,9 @@ export class App {
       return res
     }
 
-    res.end = (body) => {
-      if (res.done) {
-        this.logger.warn('uWS DEBUG: Called end after done')
-        return res
-      }
-      res.done = true
-      res._end(body)
-      return res
+    res.send = (body) => {
+      res.end(body)
     }
-
-    res.send = (body) => res.end(body)
 
     res.status = (code) => {
       res.writeStatus(String(code))
